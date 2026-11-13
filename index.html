@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#faf7f3" />
+  <meta name="description" content="万年历 · 今日黄历、宜忌、节气与月历，数据实时来自 rili.com.cn" />
+  <meta property="og:title" content="万年历 · 今日黄历与月历" />
+  <meta property="og:description" content="今日农历、干支、节气、宜忌、休班与月度总览" />
+  <meta property="og:type" content="website" />
+  <title>万年历 · 今日黄历与月历</title>
+  <style>
+    :root{
+      --bg:#faf8f5; --paper:#fffdfb; --ink:#2f2825; --muted:#918681;
+      --red:#a62926; --red-dark:#8f211f; --red-soft:#fff1ec;
+      --green:#5c7f4e; --green-soft:#f3f7ef; --line:#e8dcd3;
+      --shadow:0 9px 30px rgba(107,68,45,.036);
+      --serif:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","SimSun",serif;
+      --sans:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(ellipse at 9% 3%,rgba(202,164,129,.065),transparent 32%),var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:2px solid #ae6455;outline-offset:3px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .sprite{position:absolute;width:0;height:0;overflow:hidden}
+    .icon{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    /* 顶部加载进度条 */
+    .loadbar{position:fixed;top:0;left:0;height:2px;width:0;z-index:60;opacity:0;background:linear-gradient(90deg,#b32929,#dfa07b);transition:width .28s ease,opacity .3s}
+    .loadbar.on{opacity:1}
+    .site-header{height:76px;border-bottom:1px solid #eee5df;background:rgba(255,253,251,.91);position:relative;z-index:5;box-shadow:0 3px 14px rgba(83,46,34,.018)}
+    .header-inner{max-width:1600px;height:100%;margin:auto;padding:0 34px;display:flex;align-items:center;gap:20px}
+    .brand{display:flex;align-items:center;gap:18px;flex:none;text-decoration:none;color:var(--red-dark);margin-right:auto;white-space:nowrap;position:relative}
+    .brand-stamp{height:40px;width:40px;display:grid;place-items:center;border-radius:7px;background:linear-gradient(140deg,#bb3a35,#921f1e);color:white;font-size:25px;font-family:var(--serif);font-weight:800;box-shadow:0 3px 10px #a52c2822;position:relative}
+    .brand-stamp::before,.brand-stamp::after{content:"";position:absolute;top:-4px;width:2px;height:10px;border-radius:2px;background:var(--red-dark)}
+    .brand-stamp::before{left:11px}.brand-stamp::after{right:11px}
+    .brand-divider{height:29px;width:1px;background:#c8a596}
+    .brand-name{font-family:var(--serif);font-size:29px;font-weight:800;letter-spacing:3px}
+    .main-nav{display:flex;align-items:center;gap:7px;flex:none;height:100%;position:relative;z-index:2}
+    .nav-item{height:100%;padding:0 14px;display:grid;place-items:center;background:none;border:0;color:#302a27;font-size:15px;letter-spacing:.5px;position:relative;white-space:nowrap}
+    .nav-item:hover{color:var(--red)}
+    .nav-item.is-active{color:var(--red-dark);font-weight:700}
+    .nav-item.is-active::after{content:"";position:absolute;bottom:14px;left:14px;right:14px;height:2px;background:var(--red);border-radius:8px}
+    .search-wrap{display:flex;align-items:center;gap:8px;width:229px;height:37px;border:1px solid #d7bdb0;border-radius:22px;padding:0 13px 0 12px;flex:none;color:#6f5750;position:relative;z-index:2;background:#fffdfa}
+    .search-wrap .icon{width:17px;height:17px}
+    .search-wrap input{min-width:0;width:100%;border:none;background:transparent;outline:0;font-size:12.5px;color:var(--ink)}
+    .search-wrap input::placeholder{color:#9c8e88}
+    .page-shell{max-width:1600px;padding:20px 18px 34px;margin:auto}
+    .page{display:none;animation:fadeUp .27s ease both}
+    .page.is-active{display:block}
+    @keyframes fadeUp{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .primary-grid{display:grid;grid-template-columns:minmax(0,1.56fr) minmax(0,1fr);gap:18px;align-items:stretch}
+    .left-stack{min-width:0;display:flex;flex-direction:column;gap:18px}
+    .panel{position:relative;min-width:0;overflow:hidden;background:linear-gradient(112deg,#fffdfb 0%,#fffdfa 60%,#fffbf7 100%);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+    .hero{flex:1;min-height:356px;padding:39px 31px 50px;background:radial-gradient(ellipse at 12% 5%,rgba(243,231,221,.38),transparent 48%),linear-gradient(120deg,#fffdfb,#fffaf7)}
+    .hero-content{display:grid;grid-template-columns:40% 60%;height:100%;position:relative;z-index:1;align-items:center}
+    .hero-big{display:flex;align-items:center;justify-content:center;gap:13px;min-width:0;padding-right:21px}
+    .vertical-tag{border:1px solid #ba765a;outline:1px solid #e5bcab;outline-offset:4px;font-family:var(--serif);font-weight:800;color:var(--red);font-size:25px;line-height:1.45;writing-mode:vertical-rl;letter-spacing:3px;padding:9px 2px;border-radius:3px;background:rgba(255,255,255,.65)}
+    .big-number{font-family:Georgia,'Times New Roman',var(--serif);font-weight:500;font-size:clamp(108px,11.7vw,174px);line-height:1;color:#b32929;letter-spacing:-10px;white-space:nowrap;text-shadow:1px 2px 0 rgba(129,38,38,.05)}
+    .hero-detail{height:100%;border-left:1px solid #d9baac;padding-left:30px;display:flex;flex-direction:column;justify-content:center;gap:11px;min-width:0}
+    .hero-heading{font-family:var(--serif);font-size:clamp(24px,2.05vw,32px);font-weight:800;letter-spacing:.8px;white-space:nowrap;line-height:1.4;margin:0 0 4px}
+    .hero-info{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.5px;min-width:0;line-height:1.45}
+    .hero-info .icon{color:#ba3f2e;width:22px;height:22px}
+    .hero-info.double{gap:15px}
+    .hero-info .small-separator{width:1px;height:22px;background:#e0c4b7;margin:0 8px}
+    .season-pill{border:1px solid #d7a18d;border-radius:30px;display:inline-flex;align-self:flex-start;align-items:center;gap:10px;padding:7px 18px;margin-top:4px;color:var(--red);background:#fff7f2;font-family:var(--serif);font-size:18px;font-weight:800;letter-spacing:1.3px}
+    .season-pill .icon{width:24px;height:24px}
+    .hero-note{position:absolute;bottom:17px;left:20px;right:20px;z-index:2;text-align:center;color:#786e69;font-family:var(--serif);font-size:14px;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .deco-plum{position:absolute;top:-5px;left:0;width:230px;height:118px;z-index:0;pointer-events:none;opacity:.97}
+    .deco-cloud{position:absolute;right:11px;top:12px;width:85px;height:60px;fill:none;stroke:#e7c9ab;stroke-width:1.3;opacity:.55;pointer-events:none}
+    .deco-cloud.lower{top:auto;bottom:31px;right:9px;width:104px;height:56px}
+    .deco-mountain{position:absolute;bottom:-3px;left:0;width:100%;height:96px;pointer-events:none;opacity:.42;z-index:0}
+    .auspicious-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .auspicious{min-height:139px;display:flex;align-items:center;gap:22px;padding:21px 19px}
+    .auspicious.good{background:linear-gradient(115deg,#fcfdf9,#f4f7ee)}
+    .auspicious.bad{background:linear-gradient(115deg,#fffdfb,#fdf1ef)}
+    .auspicious-seal{display:grid;place-items:center;flex:none;width:64px;height:70px;border-radius:15px;border:2px double #7d9d6b;background:var(--green);color:white;font-family:var(--serif);font-size:29px;font-weight:800;box-shadow:inset 0 0 0 3px #edf3e8,0 0 0 1px #abc19b}
+    .bad .auspicious-seal{background:#c34033;border-color:#da7d6b;box-shadow:inset 0 0 0 3px #fff1ec,0 0 0 1px #e6aaa2}
+    .auspicious-text{border-left:1px solid #d8cabe;padding-left:19px;line-height:1.95;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:.35px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .auspicious .small-flourish{position:absolute;right:2px;bottom:-11px;font-size:82px;font-family:var(--serif);color:#e8cbb5;opacity:.44;line-height:1;pointer-events:none}
+    .calendar-panel{padding:22px 25px 22px;display:flex;flex-direction:column;min-height:566px}
+    .calendar-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;min-height:38px}
+    .cal-title{font-family:var(--serif);font-weight:800;font-size:25px;letter-spacing:1px;white-space:nowrap;background:none;border:0;color:inherit;padding:0}
+    .cal-title:hover{color:var(--red)}
+    .cal-arrow{width:40px;height:35px;display:grid;place-items:center;border:1px solid #e1c9bb;background:#fffaf5;color:#8b3e31;border-radius:9px;transition:.18s}
+    .cal-arrow:hover{background:#fff0ea;border-color:#c88e7a}
+    .cal-arrow .icon{width:21px;height:21px}
+    .calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:40px;border-bottom:1px solid #eae2db;align-items:center;margin-bottom:0;font-family:var(--serif);font-size:17px;font-weight:700;text-align:center}
+    .weekend-color{color:var(--red)!important}
+    .calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));flex:1;min-height:404px;transition:opacity .2s}
+    .calendar-days.is-loading{opacity:.4}
+    .day-cell{min-width:0;min-height:0;position:relative;overflow:hidden;border:0;border-bottom:1px solid #f0eae4;background:transparent;text-align:center;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:1px;border-radius:0;padding:4px 1px 5px;color:#302925;transition:.16s}
+    .day-cell:nth-last-child(-n+7){border-bottom:none}
+    .day-cell:hover:not(.is-outside){background:#fbf3ee;border-radius:7px}
+    .day-cell.is-outside{color:#aea8a5}
+    .day-cell.is-outside .day-lunar{color:#b8b1ad}
+    .day-number{font:600 23px/1.1 Georgia,var(--serif);letter-spacing:-.4px}
+    .day-lunar{font-family:var(--serif);color:#796c66;font-size:11px;line-height:1.35;white-space:nowrap}
+    .day-cell.is-weekend:not(.is-outside) .day-number{color:var(--red)}
+    .day-cell.is-selected{background:linear-gradient(160deg,#af2927,#be3c33);border-radius:9px;box-shadow:0 4px 14px #a92e2729;color:white;border-bottom-color:transparent}
+    .day-cell.is-selected .day-number,.day-cell.is-selected .day-lunar{color:#fff}
+    .day-cell.is-selected:hover{background:linear-gradient(160deg,#ae2927,#c54437)}
+    .day-cell.is-today:not(.is-selected){box-shadow:inset 0 0 0 1px #c98b74;border-radius:9px}
+    .day-cell.is-today:not(.is-selected) .day-number{text-decoration:underline;text-underline-offset:3px}
+    .day-event{font-size:10px;line-height:1.3;color:#aa3d2b;border:1px solid #edc1ae;background:#fff0e8;padding:1px 5px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;max-width:calc(100% - 2px);min-width:0;overflow:hidden}
+    .day-event>span{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .day-cell.is-selected .day-event{background:#e7b28e40;border-color:#efd1bb;color:#fff}
+    .day-flag{position:absolute;top:3px;right:4px;font-family:var(--sans);font-size:9px;font-weight:700;line-height:1;padding:2px 3px;border-radius:4px;letter-spacing:0}
+    .day-flag.off{color:#4b6f3c;background:#eef5e8;border:1px solid #cfe0c4}
+    .day-flag.work{color:#b4472f;background:#fdf0ea;border:1px solid #f0cdbf}
+    .day-cell.is-selected .day-flag.off{background:#dcebd2;color:#3f5f32}
+    .day-cell.is-selected .day-flag.work{background:#f7d9cd;color:#8f3521}
+    .load-error{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px 12px;text-align:center;color:#8a5a4c;font-family:var(--serif);font-size:14px}
+    .load-error .retry{border:1px solid #d9b0a0;background:#fff6f1;color:#8f3521;border-radius:20px;padding:6px 16px;font-size:13px}
+    .load-error .retry:hover{background:#ffefe8}
+    .subsection-grid{display:grid;grid-template-columns:minmax(0,1.46fr) minmax(0,1fr);gap:18px;margin-top:20px}
+    .info-panel,.countdown-panel{min-height:238px;padding:18px 22px 20px}
+    .section-heading{display:flex;gap:11px;align-items:center;font-family:var(--serif);font-weight:800;font-size:20px;color:var(--red-dark);letter-spacing:1px;margin:0;padding-bottom:14px;border-bottom:1px solid #e9ddd3;position:relative;z-index:1}
+    .section-heading::before{content:"";display:block;flex:none;width:4px;height:23px;border-radius:2px;background:#ad2927}
+    .section-heading::after{content:"〰";position:absolute;right:1px;top:-14px;font-size:52px;font-family:var(--serif);font-weight:400;color:#e6bc94;opacity:.66}
+    .facts-grid{display:grid;grid-template-columns:1fr 1.35fr;row-gap:0;column-gap:27px;margin-top:7px}
+    .fact{display:flex;align-items:center;gap:11px;padding:11px 3px;border-bottom:1px solid #efe7e0;min-width:0;font-family:var(--serif);font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fact:nth-last-child(-n+2){border-bottom:none}
+    .fact .icon{color:#c04c37;width:22px;height:22px}
+    .countdown-content{display:flex;align-items:center;justify-content:center;gap:21px;height:153px}
+    .lantern-circle{width:90px;height:90px;border-radius:50%;display:grid;place-items:center;background:#faeee9;flex:none;color:var(--red)}
+    .lantern-circle svg{width:58px;height:70px}
+    .countdown-copy{padding-left:21px;border-left:1px solid #e0c7bb;font-family:var(--serif);min-width:0}
+    .countdown-lead{font-size:22px;white-space:nowrap}
+    .countdown-lead strong{font-size:51px;color:var(--red);font-family:Georgia,var(--serif);font-weight:500;vertical-align:-3px;margin:0 4px}
+    .countdown-date{color:#776c67;margin-top:0;font-size:15px}
+    .bottom-note{text-align:center;font-size:12px;color:#a49a95;margin-top:18px;line-height:1.9}
+    .bottom-note a{color:#a08078}
+    /* 月历页面 */
+    .month-hero{min-height:481px;padding:38px 25px 65px}
+    .month-hero .hero-content{grid-template-columns:42% 58%}
+    .month-hero .hero-big{gap:14px;padding-right:12px}
+    .month-hero .big-number{font-size:clamp(105px,12vw,169px);letter-spacing:-8px;white-space:nowrap}
+    .month-hero .big-number span{font-family:var(--serif);font-size:.63em;letter-spacing:-4px}
+    .month-hero .hero-detail{padding-left:28px;gap:11px}
+    .month-hero .hero-heading{font-size:clamp(24px,2.06vw,31px);margin-bottom:4px}
+    .month-hero .hero-info{font-size:16.2px;font-weight:600;gap:12px}
+    .month-hero .hero-info .icon{width:21px;height:21px}
+    .month-hero .hero-info.month-keywords{flex-wrap:wrap;gap:7px}
+    .month-hero .hero-info.month-keywords>.icon{margin-right:5px}
+    .tiny-tag{font-size:12px;font-family:var(--serif);border:1px solid #e4ada2;background:#fff4f0;color:#aa2e2b;border-radius:18px;padding:3px 9px;letter-spacing:0;white-space:nowrap}
+    .month-hero .hero-note{font-size:13px;bottom:25px}
+    .month-calendar{min-height:558px}
+    .month-calendar .calendar-days{min-height:396px}
+    .month-calendar .day-number{font-size:21px}
+    .month-calendar .day-lunar{font-size:10px}
+    .month-bottom{display:grid;grid-template-columns:1fr 1fr 1.35fr .97fr;gap:16px;margin-top:20px;align-items:stretch}
+    .month-card{min-height:278px;padding:18px 18px 15px}
+    .month-card .section-heading{font-size:19px}
+    .term-item{display:flex;align-items:center;gap:13px;padding:19px 2px 17px;border-bottom:1px solid #ebe0d8}
+    .term-item:last-child{border-bottom:0}
+    .term-illustration{flex:none;width:69px;height:69px;border:1px solid #e5d1c1;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fffdf8,#f6eee4);display:grid;place-items:center;font-size:34px;font-family:var(--serif)}
+    .term-when{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--red)}
+    .term-desc{font-family:var(--serif);font-size:12.5px;color:#6b625d;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .festival-list{list-style:none;padding:5px 0 0;margin:0}
+    .festival-list li{display:flex;align-items:center;gap:9px;border-bottom:1px solid #eee5df;padding:10px 1px;font-family:var(--serif);font-size:12.5px;white-space:nowrap}
+    .festival-list li:last-child{border-bottom:none}
+    .festival-list li>span:last-child{overflow:hidden;text-overflow:ellipsis}
+    .festival-list .icon{width:15px;height:15px;color:#c04737}
+    .festival-date{font-weight:800;min-width:52px;color:#40322d}
+    .selected-panel-top{display:flex;align-items:center;gap:15px;margin-top:13px}
+    .selected-lantern{height:62px;width:62px;flex:none;border-radius:50%;background:#fdf0e9;display:grid;place-items:center;color:var(--red)}
+    .selected-lantern svg{width:38px;height:50px}
+    .selected-text{border-left:1px solid #e5cbbf;padding-left:15px;min-width:0}
+    .selected-title{font-family:var(--serif);font-size:23px;font-weight:800;white-space:nowrap}
+    .selected-subtitle{font-family:var(--serif);font-size:14px;margin-top:4px;color:#736862}
+    .selected-subtitle .tiny-tag{margin-left:7px}
+    .mini-yi-ji{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:15px}
+    .mini-yi-ji>div{display:flex;gap:9px;min-height:83px;border:1px solid #e0e7d7;background:#f8faf4;border-radius:10px;padding:10px}
+    .mini-yi-ji>div:last-child{background:#fff8f6;border-color:#f0ded8}
+    .mini-badge{width:28px;height:30px;border-radius:8px;display:grid;place-items:center;color:white;background:var(--green);font-family:var(--serif);font-size:16px;font-weight:800;flex:none}
+    .mini-yi-ji>div:last-child .mini-badge{background:#c33e34}
+    .mini-copy{font-family:var(--serif);font-size:12px;line-height:1.72;color:#554d46;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+    .detail-footer{display:flex;justify-content:space-between;gap:9px;margin-top:12px}
+    .detail-footer>span{border:1px solid #eed8c6;background:#fff8f1;border-radius:23px;padding:5px 9px;color:#a64231;font-family:var(--serif);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stat-list{list-style:none;padding:7px 0 0;margin:0}
+    .stat-list li{display:flex;gap:13px;align-items:center;border-bottom:1px solid #eae1d9;padding:12px 3px;font-family:var(--serif);font-size:14px;white-space:nowrap}
+    .stat-list li:last-child{border-bottom:none}
+    .stat-list .icon{color:#c24632;width:20px;height:20px}
+    .stat-list strong{color:var(--red);font-weight:700}
+    .toast{position:fixed;left:50%;bottom:36px;transform:translate(-50%,15px);border:1px solid #dcc2b5;border-radius:9px;padding:11px 20px;background:#fffaf5;color:#7d3c32;box-shadow:0 8px 22px #6a352327;opacity:0;pointer-events:none;transition:.25s;z-index:70;font-size:13px;max-width:min(90vw,560px);text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1440px){.header-inner{padding:0 22px;gap:13px}.brand{gap:12px}.brand-name{font-size:25px}.nav-item{padding:0 10px;font-size:14px}.search-wrap{width:205px}.hero{padding-left:20px;padding-right:21px}.hero-detail{padding-left:22px}.hero-info{font-size:17px}.big-number{font-size:145px}.hero-heading{font-size:28px}.auspicious{gap:13px}.auspicious-text{padding-left:13px;font-size:15px}.month-hero .hero-info{font-size:15px}.month-hero .hero-heading{font-size:26px}.month-hero .big-number{font-size:145px}.month-card{padding-left:14px;padding-right:14px}.term-illustration{width:57px;height:57px;font-size:29px}.term-when{font-size:16px}.festival-list li{font-size:12px}.detail-footer>span{font-size:11px}.selected-title{font-size:20px}}
+    @media(max-width:1190px){.site-header{height:auto;min-height:77px}.header-inner{flex-wrap:wrap;padding:12px 22px;row-gap:4px}.main-nav{order:3;width:100%;height:42px;justify-content:center}.nav-item{height:42px;padding:0 13px}.nav-item.is-active::after{bottom:0}.search-wrap{margin-left:auto}.primary-grid{grid-template-columns:1fr 1fr}.hero,.month-hero{padding-top:32px}.hero-content,.month-hero .hero-content{grid-template-columns:37% 63%}.hero-big{gap:9px}.big-number,.month-hero .big-number{font-size:clamp(83px,10vw,135px)}.vertical-tag{font-size:20px}.hero-heading,.month-hero .hero-heading{font-size:22px}.hero-info,.month-hero .hero-info{font-size:14px;gap:8px}.hero-info .icon{width:18px;height:18px}.season-pill{font-size:14px}.auspicious-row{grid-template-columns:1fr;gap:11px}.auspicious{min-height:83px;padding:13px 17px}.auspicious-seal{width:42px;height:46px;font-size:21px;border-radius:10px}.auspicious-text{font-size:13px;-webkit-line-clamp:2}.calendar-panel{min-height:566px}.month-hero,.month-calendar{min-height:540px}.month-bottom{grid-template-columns:repeat(2,1fr)}.month-card{min-height:265px}.facts-grid{grid-template-columns:1fr 1fr}.fact{font-size:13px}.countdown-lead{font-size:17px}.countdown-lead strong{font-size:39px}.lantern-circle{width:70px;height:70px}}
+    @media(max-width:800px){.primary-grid,.subsection-grid{grid-template-columns:1fr}.hero{min-height:355px}.calendar-panel{min-height:540px}.month-hero,.month-calendar{min-height:520px}.auspicious-row{grid-template-columns:1fr 1fr}.auspicious{min-height:108px}.main-nav{justify-content:flex-start;overflow:auto hidden;scrollbar-width:none}.main-nav::-webkit-scrollbar{display:none}.nav-item{flex:none}.page-shell{padding:15px 12px 30px}.hero-content,.month-hero .hero-content{grid-template-columns:40% 60%}.big-number,.month-hero .big-number{font-size:clamp(100px,16vw,155px)}.month-bottom{gap:12px}.month-card{min-height:260px}}
+    @media(max-width:550px){.header-inner{padding:11px 14px}.brand-name{font-size:22px}.brand-stamp{width:34px;height:34px;font-size:21px}.brand{gap:9px}.search-wrap{width:150px}.search-wrap input{font-size:11px}.page-shell{padding:12px 10px 25px}.hero,.month-hero{padding:58px 13px 50px;min-height:380px}.hero-content,.month-hero .hero-content{grid-template-columns:33% 67%}.hero-big,.month-hero .hero-big{flex-direction:column;gap:15px;padding-right:8px}.vertical-tag{writing-mode:horizontal-tb;font-size:15px;letter-spacing:3px;outline-offset:2px;padding:2px 5px}.big-number,.month-hero .big-number{font-size:clamp(84px,21vw,113px);letter-spacing:-6px}.month-hero .big-number span{font-size:.43em}.hero-detail,.month-hero .hero-detail{padding-left:13px;gap:10px}.hero-heading,.month-hero .hero-heading{font-size:18px;white-space:normal}.hero-info,.month-hero .hero-info{font-size:12.5px;gap:5px;letter-spacing:0}.hero-info .icon,.month-hero .hero-info .icon{width:16px;height:16px}.hero-info.double{flex-wrap:wrap;gap:6px}.hero-info .small-separator{display:none}.season-pill{font-size:12px;padding:5px 8px;gap:5px}.season-pill .icon{width:17px;height:17px}.auspicious-row{grid-template-columns:1fr}.auspicious{min-height:95px}.calendar-panel{padding:16px 10px;min-height:470px}.calendar-days{min-height:336px}.day-number{font-size:19px}.day-lunar{font-size:10px}.day-event{font-size:9px;padding:0 2px}.day-flag{top:1px;right:2px;font-size:8px;padding:1px 2px}.cal-title{font-size:21px}.cal-arrow{width:34px}.subsection-grid{gap:12px;margin-top:12px}.month-bottom{grid-template-columns:1fr}.info-panel,.countdown-panel{padding:14px}.facts-grid{grid-template-columns:1fr}.fact:nth-last-child(2){border-bottom:1px solid #efe7e0}.fact{font-size:14px}.countdown-lead{font-size:17px}.month-card{min-height:0}.hero-note,.month-hero .hero-note{font-size:11px}.deco-plum{width:160px}.month-hero .hero-info.month-keywords .tiny-tag{padding:1px 6px;font-size:10px}}
+  </style>
+</head>
+<body>
+  <!-- 图标与装饰均为原生内联 SVG，页面本身不依赖任何图片或第三方静态资源；仅日历数据通过 JSONP 取自 rili.com.cn -->
+  <div class="loadbar" id="loadbar" aria-hidden="true"></div>
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 18h3"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.8A8.5 8.5 0 0 1 9.2 3.5a8.5 8.5 0 1 0 11.3 11.3Z"/></symbol>
+    <symbol id="i-yinyang" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c4.5 4.5-4.5 4.5 0 9s-4.5 4.5 0 9"/><circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.8 2.9 6.2 6.8.8-5 4.8 1.2 6.7L12 18.1l-5.9 3.2 1.2-6.7-5-4.8 6.8-.8Z"/></symbol>
+    <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M8.5 3.5 12 7l3.5-3.5M8.5 20.5 12 17l3.5 3.5M4.1 11.5 8.9 10M19.9 12.5 15.1 14M4.1 12.5 8.9 14M19.9 11.5 15.1 10"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 2h12M6 22h12M7 3c0 5 5 5 5 9s-5 4-5 9m10-18c0 5-5 5-5 9s5 4 5 9"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20.5 3.5c-8.1.2-15.3 2.2-16.7 10.3a6.1 6.1 0 0 0 6.4 6.7c7.3-.8 9.4-10.4 10.3-17Z"/><path d="M4 21c2-6 7-10 13-13"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 3H4a1 1 0 0 0-1 1v8l9 9 9-9-9-9Z"/><circle cx="8.1" cy="8" r="1.5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 1v3M12 20v3M1 12h3m16 0h3M4.2 4.2l2.2 2.2m11.2 11.2 2.2 2.2m0-15.6-2.2 2.2M6.4 17.6l-2.2 2.2"/></symbol>
+    <symbol id="i-lantern" viewBox="0 0 64 78"><path d="M32 1v10M22 12h20M32 67v10M22 66h20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M19 12c-13 8-15 36-1 50h28c14-14 12-42-1-50H19Z" fill="currentColor" opacity=".9"/><path d="M24 12c-9 10-9 39 0 50m16-50c9 10 9 39 0 50M32 12v50" stroke="#fff0e6" stroke-width="2" fill="none"/><path d="M17 62h30M20 66h24" stroke="currentColor" stroke-width="3"/><path d="m28 74 4 3 4-3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </svg>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home" id="brandLink" aria-label="万年历首页">
+        <span class="brand-stamp">历</span><span class="brand-divider"></span><span class="brand-name">万年历</span>
+      </a>
+      <nav class="main-nav" aria-label="顶部导航">
+        <button type="button" class="nav-item is-active" data-target="home" aria-current="page">首页</button>
+        <button type="button" class="nav-item" data-target="month">月历</button>
+        <button type="button" class="nav-item" data-mock="黄历">黄历</button>
+        <button type="button" class="nav-item" data-mock="节气">节气</button>
+        <button type="button" class="nav-item" data-mock="节日">节日</button>
+        <button type="button" class="nav-item" data-mock="择吉">择吉</button>
+        <button type="button" class="nav-item" data-mock="生肖">生肖</button>
+        <button type="button" class="nav-item" data-mock="星座">星座</button>
+        <button type="button" class="nav-item" data-mock="历史上的今天">历史上的今天</button>
+      </nav>
+      <form class="search-wrap" id="searchForm" role="search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input id="searchInput" aria-label="查询日期" placeholder="查询日期 / 节日 / 节气" autocomplete="off" />
+      </form>
+    </div>
+  </header>
+  <main class="page-shell">
+    <!-- 首页：选中日期的黄历详情 -->
+    <section class="page is-active" id="home" aria-label="首页日历详情">
+      <div class="primary-grid">
+        <div class="left-stack">
+          <article class="panel hero">
+            <svg class="deco-plum" viewBox="0 0 260 145" aria-hidden="true">
+              <path d="M-4 10C23 37 29 41 64 44M39 29C69 25 84 19 108-4M63 44C88 68 114 72 153 73M98 66c9-26 40-36 59-38M56 43c-10 30-4 48 13 61" fill="none" stroke="#75483a" stroke-width="4" stroke-linecap="round"/>
+              <g fill="#c83e33" stroke="#fff0e9" stroke-width="1.2"><g transform="translate(27 29)"><circle cx="0" cy="-8" r="5"/><circle cx="8" cy="-2" r="5"/><circle cx="5" cy="7" r="5"/><circle cx="-5" cy="7" r="5"/><circle cx="-8" cy="-2" r="5"/></g><g transform="translate(65 44)"><circle cx="0" cy="-9" r="5"/><circle cx="8" cy="-3" r="5"/><circle cx="5" cy="6" r="5"/><circle cx="-5" cy="6" r="5"/><circle cx="-8" cy="-3" r="5"/></g><g transform="translate(104 16)"><circle cx="0" cy="-8" r="4"/><circle cx="8" cy="-2" r="4"/><circle cx="4" cy="6" r="4"/><circle cx="-4" cy="6" r="4"/><circle cx="-8" cy="-2" r="4"/></g><g transform="translate(115 72)"><circle cx="0" cy="-6" r="4"/><circle cx="7" cy="-1" r="4"/><circle cx="4" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-7" cy="-1" r="4"/></g><g transform="translate(58 89)"><circle cx="0" cy="-6" r="4"/><circle cx="6" cy="-1" r="4"/><circle cx="3" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-6" cy="-1" r="4"/></g></g>
+              <g fill="#ecd0a1"><circle cx="27" cy="29" r="2"/><circle cx="65" cy="44" r="2"/><circle cx="104" cy="16" r="1.5"/><circle cx="115" cy="72" r="1.5"/><circle cx="58" cy="89" r="1.5"/></g>
+              <g fill="#c83e33"><circle cx="164" cy="22" r="3"/><circle cx="176" cy="41" r="2.5"/><circle cx="160" cy="77" r="3"/></g>
+            </svg>
+            <svg class="deco-cloud" viewBox="0 0 110 65" aria-hidden="true"><path d="M12 30c-16-12 4-30 16-15 12-24 40-12 33 4 28-7 37 26 15 32-10 4-20-7-13-15 10-11 23 3 13 10M7 47c10 11 31 11 42 0"/></svg>
+            <svg class="deco-cloud lower" viewBox="0 0 110 65" aria-hidden="true"><path d="M3 44c18-17 34-8 42 3 19-24 44-19 58-5M26 47c-8-19 12-28 24-17 15-21 41-14 36 4"/></svg>
+            <svg class="deco-mountain" viewBox="0 0 900 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 76 70 34 125 70 182 25 258 72 350 41 430 83 513 52 582 81 669 41 750 70 820 24 900 76v24H0Z" fill="#ead6c4"/><path d="M0 86 97 59 177 88 262 55 366 89 480 63 550 92 665 64 757 92 832 57 900 90v10H0Z" fill="#f0e4d9"/></svg>
+            <div class="hero-content">
+              <div class="hero-big"><div class="vertical-tag">万年历</div><div class="big-number" id="homeBigNumber"></div></div>
+              <div class="hero-detail">
+                <h1 class="hero-heading" id="homeHeading">加载中…</h1>
+                <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg><span id="homeLunar">—</span></div>
+                <div class="hero-info"><svg class="icon"><use href="#i-yinyang"/></svg><span id="homeGanzhi">—</span></div>
+                <div class="hero-info double"><svg class="icon"><use href="#i-sun"/></svg><span id="homeShengxiao">—</span><span class="small-separator"></span><svg class="icon"><use href="#i-star"/></svg><span id="homeXingzuo">—</span></div>
+                <div class="season-pill" id="homeSeasonPill"><svg class="icon"><use href="#i-leaf"/></svg><span id="homeTerm">—</span></div>
+              </div>
+            </div>
+            <div class="hero-note" id="homeNote"></div>
+          </article>
+          <div class="auspicious-row">
+            <section class="panel auspicious good"><div class="auspicious-seal">宜</div><div class="auspicious-text" id="homeYi">—</div><span class="small-flourish">〰</span></section>
+            <section class="panel auspicious bad"><div class="auspicious-seal">忌</div><div class="auspicious-text" id="homeJi">—</div><span class="small-flourish">〰</span></section>
+          </div>
+        </div>
+        <section class="panel calendar-panel" aria-label="当月月历">
+          <div class="calendar-header">
+            <button class="cal-arrow" data-nav="home-prev" aria-label="上个月"><svg class="icon"><use href="#i-left"/></svg></button>
+            <button class="cal-title" type="button" id="homeCalTitle" title="点击回到今天">—</button>
+            <button class="cal-arrow" data-nav="home-next" aria-label="下个月"><svg class="icon"><use href="#i-right"/></svg></button>
+          </div>
+          <div class="calendar-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="weekend-color">六</span><span class="weekend-color">日</span></div>
+          <div class="calendar-days" id="homeCalendar"></div>
+        </section>
+      </div>
+      <div class="subsection-grid">
+        <section class="panel info-panel"><h2 class="section-heading">相关信息</h2><div class="facts-grid">
+          <div class="fact"><svg class="icon"><use href="#i-calendar"/></svg><span id="factGongli">—</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-moon"/></svg><span id="factNongli">—</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-leaf"/></svg><span id="factJieqi">—</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-hourglass"/></svg><span id="factNextJieqi">—</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-sun"/></svg><span id="factShengxiao">—</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-star"/></svg><span id="factXingzuo">—</span></div>
+        </div></section>
+        <section class="panel countdown-panel"><h2 class="section-heading">节日与倒计时</h2>
+          <div class="countdown-content" id="countdownContent">
+            <div class="lantern-circle"><svg viewBox="0 0 64 78"><use href="#i-lantern"/></svg></div>
+            <div class="countdown-copy"><div class="countdown-lead" id="countdownLead">—</div><div class="countdown-date" id="countdownDate"></div></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- 月历：月度总览 -->
+    <section class="page" id="month" aria-label="月历总览">
+      <div class="primary-grid">
+        <article class="panel hero month-hero">
+          <svg class="deco-plum" viewBox="0 0 260 145" aria-hidden="true"><path d="M-4 10C23 37 29 41 64 44M39 29C69 25 84 19 108-4M63 44C88 68 114 72 153 73M98 66c9-26 40-36 59-38M56 43c-10 30-4 48 13 61" fill="none" stroke="#75483a" stroke-width="4" stroke-linecap="round"/><g fill="#c83e33" stroke="#fff0e9" stroke-width="1.2"><g transform="translate(27 29)"><circle cx="0" cy="-8" r="5"/><circle cx="8" cy="-2" r="5"/><circle cx="5" cy="7" r="5"/><circle cx="-5" cy="7" r="5"/><circle cx="-8" cy="-2" r="5"/></g><g transform="translate(65 44)"><circle cx="0" cy="-9" r="5"/><circle cx="8" cy="-3" r="5"/><circle cx="5" cy="6" r="5"/><circle cx="-5" cy="6" r="5"/><circle cx="-8" cy="-3" r="5"/></g><g transform="translate(104 16)"><circle cx="0" cy="-8" r="4"/><circle cx="8" cy="-2" r="4"/><circle cx="4" cy="6" r="4"/><circle cx="-4" cy="6" r="4"/><circle cx="-8" cy="-2" r="4"/></g><g transform="translate(115 72)"><circle cx="0" cy="-6" r="4"/><circle cx="7" cy="-1" r="4"/><circle cx="4" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-7" cy="-1" r="4"/></g></g><g fill="#ecd0a1"><circle cx="27" cy="29" r="2"/><circle cx="65" cy="44" r="2"/><circle cx="104" cy="16" r="1.5"/><circle cx="115" cy="72" r="1.5"/></g></svg>
+          <svg class="deco-cloud" viewBox="0 0 110 65" aria-hidden="true"><path d="M12 30c-16-12 4-30 16-15 12-24 40-12 33 4 28-7 37 26 15 32-10 4-20-7-13-15 10-11 23 3 13 10M7 47c10 11 31 11 42 0"/></svg>
+          <svg class="deco-mountain" viewBox="0 0 900 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 76 70 34 125 70 182 25 258 72 350 41 430 83 513 52 582 81 669 41 750 70 820 24 900 76v24H0Z" fill="#ead6c4"/><path d="M0 86 97 59 177 88 262 55 366 89 480 63 550 92 665 64 757 92 832 57 900 90v10H0Z" fill="#f0e4d9"/></svg>
+          <div class="hero-content">
+            <div class="hero-big"><div class="vertical-tag">月历</div><div class="big-number" id="monthBigNumber">—</div></div>
+            <div class="hero-detail">
+              <h1 class="hero-heading" id="monthHeading">加载中…</h1>
+              <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg><span id="monthGongli">—</span></div>
+              <div class="hero-info"><svg class="icon"><use href="#i-moon"/></svg><span id="monthLunarRange">—</span></div>
+              <div class="hero-info"><svg class="icon"><use href="#i-sun"/></svg><span id="monthShengxiao">—</span></div>
+              <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg><span id="monthDays">—</span></div>
+              <div class="hero-info"><svg class="icon"><use href="#i-leaf"/></svg><span id="monthTerms">—</span></div>
+              <div class="hero-info month-keywords"><svg class="icon"><use href="#i-tag"/></svg><span>月度关键词：</span><span id="monthKeywords"></span></div>
+            </div>
+          </div>
+          <div class="hero-note" id="monthNote"></div>
+        </article>
+        <section class="panel calendar-panel month-calendar" aria-label="月历">
+          <div class="calendar-header">
+            <button class="cal-arrow" data-nav="month-prev" aria-label="上个月"><svg class="icon"><use href="#i-left"/></svg></button>
+            <button class="cal-title" type="button" id="monthCalTitle" title="点击回到本月">—</button>
+            <button class="cal-arrow" data-nav="month-next" aria-label="下个月"><svg class="icon"><use href="#i-right"/></svg></button>
+          </div>
+          <div class="calendar-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="weekend-color">六</span><span class="weekend-color">日</span></div>
+          <div class="calendar-days" id="monthCalendar"></div>
+        </section>
+      </div>
+      <div class="month-bottom">
+        <section class="panel month-card"><h2 class="section-heading">本月节气</h2><div id="termList"></div></section>
+        <section class="panel month-card"><h2 class="section-heading">节日速览</h2><ul class="festival-list" id="festivalList"></ul></section>
+        <section class="panel month-card"><h2 class="section-heading">重点日期详情</h2>
+          <div class="selected-panel-top"><div class="selected-lantern"><svg viewBox="0 0 64 78"><use href="#i-lantern"/></svg></div><div class="selected-text"><div class="selected-title" id="selectedDate">—</div><div class="selected-subtitle"><span id="selectedLunar">—</span><span class="tiny-tag" id="selectedFestival">—</span></div></div></div>
+          <div class="mini-yi-ji"><div><span class="mini-badge">宜</span><span class="mini-copy" id="selectedYi">—</span></div><div><span class="mini-badge">忌</span><span class="mini-copy" id="selectedJi">—</span></div></div>
+          <div class="detail-footer"><span id="selectedTerm">—</span><span id="selectedNext">—</span></div>
+        </section>
+        <section class="panel month-card"><h2 class="section-heading">月度概览</h2>
+          <ul class="stat-list" id="statList"></ul>
+        </section>
+      </div>
+    </section>
+    <div class="bottom-note">
+      万年历 · 数据实时取自 <a href="https://www.rili.com.cn/" target="_blank" rel="noopener">rili.com.cn</a>（JSONP 直连，无第三方框架）
+      ｜　<b>休</b> 放假　<b>班</b> 调休上班
+    </div>
+  </main>
+  <div class="toast" role="status" aria-live="polite" id="toast"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ============================================================
+       0. 工具
+       ============================================================ */
+    var $ = function (s, r) { return (r || document).querySelector(s); };
+    var pad2 = function (n) { return String(n).length < 2 ? '0' + n : String(n); };
+    var esc = function (s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    };
+    // 数据源大量字段内嵌 <a> 标签，统一去标签后当纯文本用（绝不 innerHTML 直塞远端 HTML）
+    var strip = function (h) {
+      return String(h == null ? '' : h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    };
+    var splitList = function (v) {
+      if (Array.isArray(v)) return v.filter(Boolean);
+      if (v == null || v === '') return [];
+      return String(v).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    };
+    var anchorList = function (v) {
+      if (!v) return [];
+      if (Array.isArray(v)) return v.map(strip).filter(Boolean);
+      return String(v).split(',').map(strip).filter(Boolean);
+    };
+    var keyOf = function (y, m, d) { return y + '-' + pad2(m) + '-' + pad2(d); };
+    var WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    var TERM_SEASON = {
+      '立春': '春', '雨水': '春', '惊蛰': '春', '春分': '春', '清明': '春', '谷雨': '春',
+      '立夏': '夏', '小满': '夏', '芒种': '夏', '夏至': '夏', '小暑': '夏', '大暑': '夏',
+      '立秋': '秋', '处暑': '秋', '白露': '秋', '秋分': '秋', '寒露': '秋', '霜降': '秋',
+      '立冬': '冬', '小雪': '冬', '大雪': '冬', '冬至': '冬', '小寒': '冬', '大寒': '冬'
+    };
+    var SEASON_EMOJI = { '春': '🌸', '夏': '🌿', '秋': '🍂', '冬': '❄️' };
+
+    var toastTimer;
+    function showToast(msg) {
+      var node = $('#toast');
+      node.textContent = msg;
+      node.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { node.classList.remove('show'); }, 2600);
+    }
+    // 任何未捕获脚本错误都可视化，避免线上静默白屏
+    window.onerror = function (msg) { showToast('页面脚本出错：' + msg); };
+
+    /* ============================================================
+       1. 数据源：rili.com.cn JSONP
+       —— 回调名写死在远端文件里（jsonrun_PcWnl / jsonrun_Today），
+          因此必须串行加载，否则并发请求会互相覆盖回调。
+       ============================================================ */
+    var SRC = 'https://www.rili.com.cn/rili/json';
+    var chain = Promise.resolve();
+    var inflight = 0;
+    var bar = $('#loadbar');
+
+    function pulse(on) {
+      inflight += on ? 1 : -1;
+      if (inflight < 0) inflight = 0;
+      if (inflight > 0) {
+        bar.classList.add('on');
+        bar.style.width = '70%';
+      } else {
+        bar.style.width = '100%';
+        setTimeout(function () { bar.classList.remove('on'); bar.style.width = '0'; }, 260);
+      }
+    }
+
+    function jsonp(path, cbName) {
+      var run = function () {
+        return new Promise(function (resolve, reject) {
+          var done = false;
+          var script = document.createElement('script');
+          var timer;
+          function finish(err, data) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            script.onload = script.onerror = null;
+            script.remove();
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            pulse(false);
+            if (err) reject(err); else resolve(data);
+          }
+          timer = setTimeout(function () { finish(new Error('数据请求超时')); }, 9000);
+          window[cbName] = function (data) { finish(null, data); };
+          script.onerror = function () { finish(new Error('数据加载失败')); };
+          script.src = SRC + path;
+          pulse(true);
+          document.head.appendChild(script);
+        });
+      };
+      var p = chain.then(run, run);
+      chain = p.then(function () {}, function () {});
+      return p;
+    }
+
+    // sessionStorage 缓存（源站缓存 30 分钟，再加一层会话内缓存避免重复请求）
+    var mem = new Map();
+    var SS = 'wnl2:';
+    var ssOrder = [];
+    function ssGet(k) {
+      try { var v = sessionStorage.getItem(SS + k); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+    }
+    function ssSet(k, v) {
+      try {
+        sessionStorage.setItem(SS + k, JSON.stringify(v));
+        ssOrder.push(k);
+        while (ssOrder.length > 10) {
+          var old = ssOrder.shift();
+          if (old !== k) sessionStorage.removeItem(SS + old);
+        }
+      } catch (e) { /* 配额满则放弃缓存 */ }
+    }
+
+    function getMonth(y, m) {
+      var k = 'm' + keyOf(y, m, 1);
+      if (mem.has(k)) return Promise.resolve(mem.get(k));
+      var cached = ssGet(k);
+      if (cached) { mem.set(k, cached); return Promise.resolve(cached); }
+      return jsonp('/pc_wnl/' + y + '/' + m + '.js', 'jsonrun_PcWnl').then(function (raw) {
+        var vm = adaptMonth(raw, y, m);
+        ssSet(k, vm);
+        mem.set(k, vm);
+        return vm;
+      });
+    }
+    function getDay(y, m, d) {
+      var k = 'd' + keyOf(y, m, d);
+      if (mem.has(k)) return Promise.resolve(mem.get(k));
+      var cached = ssGet(k);
+      if (cached) { mem.set(k, cached); return Promise.resolve(cached); }
+      return jsonp('/today/' + y + '/' + pad2(m) + pad2(d) + '.js', 'jsonrun_Today').then(function (raw) {
+        var vm = adaptDay(raw, y, m, d);
+        ssSet(k, vm);
+        mem.set(k, vm);
+        return vm;
+      });
+    }
+    // 当天数据可能尚未生成：向前回退最多 3 天
+    function getDayWithFallback(y, m, d) {
+      var tries = 0;
+      function attempt(yy, mm, dd) {
+        return getDay(yy, mm, dd).catch(function (err) {
+          if (tries++ >= 3) throw err;
+          var dt = new Date(yy, mm - 1, dd);
+          dt.setDate(dt.getDate() - 1);
+          return attempt(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+        });
+      }
+      return attempt(y, m, d);
+    }
+
+    /* ============================================================
+       2. 适配层：源数据 → 视图模型（纯函数，不碰 DOM）
+       ============================================================ */
+    function adaptMonth(raw, y, m) {
+      var cells = (raw.data || []).map(function (o) {
+        var fest = strip(o.jie);
+        var festAll = anchorList(o.jieArr && o.jieArr.length ? o.jieArr : o.jie);
+        var jieri = anchorList(o.jieri);
+        var names = [];
+        if (fest) names.push(fest);
+        jieri.forEach(function (n) { if (names.indexOf(n) < 0) names.push(n); });
+        var termName = strip(o.jieqi_link) || o.jieqi || '';
+        var isTerm = o.jieqi_pass === 1;
+        return {
+          y: o.nian, m: o.yue, d: o.ri,
+          lunar: o.r2 || '',
+          nyueri: o.n_yueri || '',
+          out: o.yuethis !== 0,
+          week: o.week || 0,
+          weekend: o.week === 6 || o.week === 7,
+          jia: o.jia || 0,
+          isTerm: isTerm,
+          termName: termName,
+          names: names,
+          festAll: festAll,
+          yi: splitList(o.yi),
+          ji: splitList(o.ji),
+          cellEvent: names[0] || (isTerm ? termName : ''),
+          gan: [o.gz_nian, o.gz_yue, o.gz_ri].filter(Boolean).join(' '),
+          shengxiao: o.shengxiao || '',
+          xingzuo: strip(o.xingzuo_link),
+          nextTerm: strip(o.jieqi_next_link),
+          nextTermDays: Number(o.jieqi_next || 0),
+          termDays: Number(o.jieqi_pass || 0),
+          yuexiang: o.yuexiang || '',
+          xingxiu: o.xingxiu || ''
+        };
+      });
+      var days = cells.filter(function (c) { return !c.out; });
+      var rows = raw.zhoucount || Math.max(5, Math.ceil(cells.length / 7));
+      return {
+        y: y, m: m, rows: rows, cells: cells, days: days,
+        first: days[0] || null,
+        last: days[days.length - 1] || null,
+        shengxiao: (days[0] || {}).shengxiao || '',
+        terms: days.filter(function (c) { return c.isTerm; }).map(function (c) { return { d: c.d, name: c.termName, lunar: c.nyueri }; }),
+        festivals: days.filter(function (c) { return c.names.length; })
+          .map(function (c) { return { d: c.d, names: c.names }; }),
+        weekendCount: days.filter(function (c) { return c.weekend; }).length,
+        holidayCount: days.filter(function (c) { return c.jia > 0 && c.jia !== 90; }).length,
+        workCount: days.filter(function (c) { return c.jia === 90; }).length
+      };
+    }
+
+    function adaptDay(raw, y, m, d) {
+      var yl = raw.yangli || {}, nl = raw.nongli || {}, jq = raw.jieqi || {}, xz = raw.xingzuo || {};
+      return {
+        y: yl.year || y, m: yl.month || m, d: yl.day || d,
+        weekday: yl.xingqi || WEEK[new Date(y, m - 1, d).getDay()],
+        lunar: nl.yueri || '',
+        nian: nl.nian || '', yue: nl.yue || '', ri: nl.ri || '',
+        ganzhi: nl.ganzhi || '',
+        shengxiao: nl.shengxiao || '',
+        xingzuo: strip(xz.xingzuo_link) || (xz.xingzuo ? xz.xingzuo + '座' : ''),
+        termName: strip(jq.jieqi_link) || jq.jieqi || '',
+        nextTerm: strip(jq.jieqi_next_link),
+        nextTermDays: Number(jq.jieqi_next || 0),
+        yi: splitList(raw.yi),
+        ji: splitList(raw.ji),
+        note: strip(raw.mrbb),
+        djs: (raw.djs || []).map(function (o) {
+          return { name: o.bt_cha || '', days: Number(o.cha || 0), date: o.date || '', jin: o.bt_jin || '' };
+        })
+      };
+    }
+
+    /* ============================================================
+       3. 渲染层
+       ============================================================ */
+    var state = {
+      today: (function () { var n = new Date(); return { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() }; })(),
+      home: null,
+      month: null,
+      page: 'home'
+    };
+    state.todayKey = keyOf(state.today.y, state.today.m, state.today.d);
+
+    function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+    function clampDay(y, m, d) { return Math.min(Math.max(1, d), daysInMonth(y, m)); }
+
+    function renderGrid(container, vm, selectedKey, onPick) {
+      container.style.gridTemplateRows = 'repeat(' + vm.rows + ',minmax(0,1fr))';
+      var html = vm.cells.map(function (c) {
+        var k = keyOf(c.y, c.m, c.d);
+        var cls = 'day-cell';
+        if (c.out) cls += ' is-outside';
+        if (c.weekend) cls += ' is-weekend';
+        if (k === selectedKey) cls += ' is-selected';
+        if (k === state.todayKey) cls += ' is-today';
+        var flag = c.jia === 90 ? '<span class="day-flag work">班</span>'
+          : (c.jia ? '<span class="day-flag off">休</span>' : '');
+        var ev = c.cellEvent ? '<span class="day-event"><span>' + esc(c.cellEvent) + '</span></span>' : '';
+        return '<button type="button" class="' + cls + '" data-key="' + k + '" aria-pressed="' + (k === selectedKey) + '">' +
+          flag + '<span class="day-number">' + c.d + '</span><span class="day-lunar">' + esc(c.lunar) + '</span>' + ev + '</button>';
+      }).join('');
+      container.innerHTML = html;
+      container.onclick = function (e) {
+        var btn = e.target.closest('.day-cell');
+        if (!btn) return;
+        var parts = btn.dataset.key.split('-');
+        onPick(+parts[0], +parts[1], +parts[2]);
+      };
+    }
+
+    function renderError(container, msg, retry) {
+      container.classList.remove('is-loading');
+      container.innerHTML = '<div class="load-error"><div>' + esc(msg) + '</div>' +
+        '<button type="button" class="retry">重新加载</button></div>';
+      var btn = container.querySelector('.retry');
+      if (btn && retry) btn.onclick = retry;
+    }
+
+    function joinList(arr) {
+      if (!arr || !arr.length) return '—';
+      if (arr.length <= 8) return arr.join('、');
+      return arr.slice(0, 8).join('、') + '　等 ' + arr.length + ' 项';
+    }
+
+    var homeToken = 0, monthToken = 0;
+
+    function renderHome() {
+      var st = state.home;
+      var token = ++homeToken;
+      var grid = $('#homeCalendar');
+      grid.classList.add('is-loading');
+      $('#homeCalTitle').textContent = st.y + '年' + st.m + '月';
+      Promise.all([getMonth(st.y, st.m), getDayWithFallback(st.y, st.m, st.d)]).then(function (res) {
+        if (token !== homeToken) return;
+        var mvm = res[0], dvm = res[1];
+        var cell = null;
+        for (var i = 0; i < mvm.cells.length; i++) {
+          var c = mvm.cells[i];
+          if (c.y === dvm.y && c.m === dvm.m && c.d === dvm.d) { cell = c; break; }
+        }
+        var isTermToday = !!(cell && cell.isTerm);
+
+        $('#homeBigNumber').textContent = dvm.d;
+        $('#homeHeading').textContent = dvm.y + '年' + dvm.m + '月' + dvm.d + '日 ' + dvm.weekday;
+        $('#homeLunar').textContent = '农历' + dvm.lunar;
+        $('#homeGanzhi').textContent = dvm.ganzhi;
+        $('#homeShengxiao').textContent = '生肖：' + dvm.shengxiao;
+        $('#homeXingzuo').textContent = '星座：' + dvm.xingzuo;
+        $('#homeTerm').textContent = (isTermToday ? '今日节气：' : '当前节气：') + (dvm.termName || '—');
+        $('#homeNote').textContent = dvm.note || '';
+        $('#homeYi').textContent = joinList(dvm.yi);
+        $('#homeJi').textContent = joinList(dvm.ji);
+
+        $('#factGongli').textContent = '公历：' + dvm.y + '/' + pad2(dvm.m);
+        $('#factNongli').textContent = '农历：' + dvm.nian + '年 ' + dvm.yue + dvm.ri;
+        $('#factJieqi').textContent = '节气：' + (dvm.termName || '—');
+        $('#factNextJieqi').textContent = dvm.nextTerm
+          ? '距离下一个节气：' + dvm.nextTerm + '（' + dvm.nextTermDays + '天后）'
+          : '距离下一个节气：—';
+        $('#factShengxiao').textContent = '生肖：' + dvm.shengxiao;
+        $('#factXingzuo').textContent = '星座：' + dvm.xingzuo;
+
+        var first = dvm.djs && dvm.djs.length ? dvm.djs[0] : null;
+        if (first) {
+          $('#countdownLead').innerHTML = first.days <= 0
+            ? '今天是' + esc(first.name)
+            : '距离' + esc(first.name) + '还有 <strong>' + first.days + '</strong> 天';
+          $('#countdownDate').textContent = first.name + '：' + first.date;
+        } else {
+          $('#countdownLead').textContent = '暂无临近节日';
+          $('#countdownDate').textContent = '';
+        }
+
+        renderGrid(grid, mvm, keyOf(dvm.y, dvm.m, dvm.d), function (y, m, d) {
+          state.home = { y: y, m: m, d: d };
+          syncHash();
+          renderHome();
+        });
+        grid.classList.remove('is-loading');
+      }).catch(function (err) {
+        if (token !== homeToken) return;
+        renderError(grid, '日历数据加载失败（' + err.message + '），源站 rili.com.cn 可能暂时不可用。', renderHome);
+        showToast('数据加载失败，请稍后重试');
+      });
+    }
+
+    function renderMonth() {
+      var st = state.month;
+      var token = ++monthToken;
+      var grid = $('#monthCalendar');
+      grid.classList.add('is-loading');
+      $('#monthCalTitle').textContent = st.y + '年' + st.m + '月';
+      getMonth(st.y, st.m).then(function (mvm) {
+        if (token !== monthToken) return;
+        if (!st.sel || st.sel < 1 || st.sel > mvm.days.length) {
+          st.sel = pickDefaultDay(mvm);
+          syncHash();
+        }
+        var first = mvm.first, last = mvm.last;
+        $('#monthBigNumber').innerHTML = st.m + '<span>月</span>';
+        $('#monthHeading').textContent = st.y + '年' + st.m + '月 月历总览';
+        $('#monthGongli').textContent = '公历：' + st.y + '/' + pad2(st.m);
+        $('#monthLunarRange').textContent = '农历范围：' + (first ? first.nyueri : '—') + ' ～ ' + (last ? last.nyueri : '—');
+        $('#monthShengxiao').textContent = '生肖：' + (mvm.shengxiao ? mvm.shengxiao + '年' : '—');
+        $('#monthDays').textContent = '本月天数：' + mvm.days.length + '天';
+        $('#monthTerms').textContent = '本月节气：' + (mvm.terms.length
+          ? mvm.terms.map(function (t) { return t.name + '（' + st.m + '月' + t.d + '日）'; }).join('、')
+          : '无');
+
+        var kw = [];
+        mvm.terms.forEach(function (t) { if (kw.indexOf(t.name) < 0) kw.push(t.name); });
+        mvm.festivals.forEach(function (f) { if (kw.length < 4 && f.names[0] && kw.indexOf(f.names[0]) < 0) kw.push(f.names[0]); });
+        $('#monthKeywords').innerHTML = kw.slice(0, 4).map(function (k) {
+          return '<span class="tiny-tag">' + esc(k) + '</span>';
+        }).join('');
+
+        $('#monthNote').textContent = buildMonthNote(st, mvm);
+
+        renderGrid(grid, mvm, keyOf(st.y, st.m, st.sel), function (y, m, d) {
+          st.sel = d;
+          syncHash();
+          renderMonth();
+        });
+        grid.classList.remove('is-loading');
+
+        renderTerms(mvm);
+        renderFestivals(mvm);
+        renderSelected(mvm, st);
+        renderStats(st, mvm);
+      }).catch(function (err) {
+        if (token !== monthToken) return;
+        renderError(grid, '月历数据加载失败（' + err.message + '），源站 rili.com.cn 可能暂时不可用。', renderMonth);
+        showToast('数据加载失败，请稍后重试');
+      });
+    }
+
+    function pickDefaultDay(mvm) {
+      var td = state.today;
+      if (td.y === mvm.y && td.m === mvm.m) return td.d;
+      var hit = mvm.days.filter(function (c) { return c.isTerm || c.names.length; })[0];
+      return hit ? hit.d : 1;
+    }
+
+    function buildMonthNote(st, mvm) {
+      var s = st.y + '年' + st.m + '月共' + mvm.days.length + '天';
+      if (mvm.first && mvm.last) s += '，农历' + mvm.first.nyueri + '至' + mvm.last.nyueri;
+      s += mvm.terms.length ? '，含' + mvm.terms.map(function (t) { return t.name; }).join('、') + '两个节气'.replace('两个', '') : '，本月无节气';
+      if (mvm.festivals.length) {
+        s += '；重要日期有' + mvm.festivals.slice(0, 4).map(function (f) { return f.names[0]; }).join('、');
+        if (mvm.festivals.length > 4) s += '等';
+      }
+      return s + '。';
+    }
+
+    function renderTerms(mvm) {
+      var box = $('#termList');
+      if (!mvm.terms.length) {
+        box.innerHTML = '<div class="term-item"><div class="term-desc">本月无节气</div></div>';
+        return;
+      }
+      box.innerHTML = mvm.terms.map(function (t) {
+        var emoji = SEASON_EMOJI[TERM_SEASON[t.name] || '春'] || '🌸';
+        return '<div class="term-item"><div class="term-illustration" aria-hidden="true">' + emoji + '</div>' +
+          '<div><div class="term-when">' + mvm.m + '月' + t.d + '日 ' + esc(t.name) + '</div>' +
+          '<div class="term-desc">农历' + esc(t.lunar || '') + '</div></div></div>';
+      }).join('');
+    }
+
+    function renderFestivals(mvm) {
+      var box = $('#festivalList');
+      var list = mvm.festivals.slice(0, 6);
+      if (!list.length) { box.innerHTML = '<li><span>本月暂无节日记录</span></li>'; return; }
+      box.innerHTML = list.map(function (f) {
+        return '<li><svg class="icon"><use href="#i-calendar"/></svg>' +
+          '<span class="festival-date">' + mvm.m + '月' + f.d + '日</span>' +
+          '<span>' + esc(f.names.slice(0, 2).join(' / ')) + '</span></li>';
+      }).join('');
+    }
+
+    function renderSelected(mvm, st) {
+      var cell = null;
+      for (var i = 0; i < mvm.days.length; i++) if (mvm.days[i].d === st.sel) { cell = mvm.days[i]; break; }
+      if (!cell) return;
+      var wd = WEEK[new Date(st.y, st.m - 1, st.sel).getDay()];
+      $('#selectedDate').textContent = st.m + '月' + st.sel + '日 ' + wd;
+      $('#selectedLunar').textContent = cell.nyueri || cell.lunar || '—';
+      var tag = cell.names[0] || (cell.isTerm ? cell.termName : '') || '普通日期';
+      if (cell.jia === 90) tag += ' · 班';
+      else if (cell.jia) tag += ' · 休';
+      $('#selectedFestival').textContent = tag;
+      $('#selectedYi').textContent = joinList(cell.yi);
+      $('#selectedJi').textContent = joinList(cell.ji);
+      $('#selectedTerm').textContent = '节气：' + (cell.termName || '—');
+      $('#selectedNext').textContent = cell.nextTerm
+        ? '距离' + cell.nextTerm + ' ' + cell.nextTermDays + '天'
+        : '下一节气：—';
+    }
+
+    function renderStats(st, mvm) {
+      var rows = [
+        ['i-calendar', '月份：' + st.y + '年' + st.m + '月'],
+        ['i-leaf', '节气数量：<strong>' + mvm.terms.length + '</strong>'],
+        ['i-star', '节日日期：<strong>' + mvm.festivals.length + '</strong>'],
+        ['i-calendar', '周末天数：<strong>' + mvm.weekendCount + '天</strong>']
+      ];
+      if (mvm.holidayCount) rows.push(['i-sun', '放假：<strong>' + mvm.holidayCount + '天</strong>']);
+      if (mvm.workCount) rows.push(['i-hourglass', '调休上班：<strong>' + mvm.workCount + '天</strong>']);
+      $('#statList').innerHTML = rows.map(function (r) {
+        return '<li><svg class="icon"><use href="#' + r[0] + '"/></svg><span>' + r[1] + '</span></li>';
+      }).join('');
+    }
+
+    /* ============================================================
+       4. 状态 / 路由 / 交互
+       ============================================================ */
+    function setActive(page) {
+      document.querySelectorAll('.page').forEach(function (e) { e.classList.toggle('is-active', e.id === page); });
+      document.querySelectorAll('.nav-item[data-target]').forEach(function (e) {
+        var on = e.dataset.target === page;
+        e.classList.toggle('is-active', on);
+        if (on) e.setAttribute('aria-current', 'page'); else e.removeAttribute('aria-current');
+      });
+      state.page = page;
+    }
+
+    function syncHash() {
+      var h;
+      if (state.page === 'home') {
+        var s = state.home;
+        h = '#home/' + s.y + '-' + pad2(s.m) + '-' + pad2(s.d);
+      } else {
+        h = '#month/' + state.month.y + '-' + pad2(state.month.m) +
+          (state.month.sel ? '/' + pad2(state.month.sel) : '');
+      }
+      if (location.hash !== h) history.replaceState(null, '', h);
+    }
+
+    function applyHash() {
+      var h = (location.hash || '').replace(/^#/, '');
+      var parts = h.split('/');
+      var page = parts[0] === 'month' ? 'month' : 'home';
+      var md = (parts[1] || '').match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/);
+      // 支持 #month/2026-12/25 这种把「日」放在第三段的写法
+      var dayPart = /^\d{1,2}$/.test(parts[2] || '') ? +parts[2] : 0;
+      if (page === 'home') {
+        var hd = dayPart || (md && md[3] ? +md[3] : 0);
+        state.home = md
+          ? { y: +md[1], m: +md[2], d: clampDay(+md[1], +md[2], hd || state.today.d) }
+          : { y: state.today.y, m: state.today.m, d: state.today.d };
+        state.month = { y: state.home.y, m: state.home.m, sel: state.home.d };
+      } else {
+        var sel = md ? clampDay(+md[1], +md[2], dayPart || (md[3] ? +md[3] : 0)) : 0;
+        state.month = md
+          ? { y: +md[1], m: +md[2], sel: sel }
+          : { y: state.today.y, m: state.today.m, sel: state.today.d };
+        state.home = { y: state.month.y, m: state.month.m, d: state.month.sel || 1 };
+      }
+      setActive(page);
+      if (page === 'home') renderHome(); else renderMonth();
+    }
+
+    function goPage(page) {
+      if (page === 'month') {
+        state.month = { y: state.home.y, m: state.home.m, sel: state.home.d };
+      } else {
+        state.home = { y: state.month.y, m: state.month.m, d: state.month.sel || 1 };
+      }
+      setActive(page);
+      syncHash();
+      if (page === 'home') renderHome(); else renderMonth();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function shiftMonth(page, delta) {
+      if (page === 'home') {
+        var dt = new Date(state.home.y, state.home.m - 1 + delta, 1);
+        var y = dt.getFullYear(), m = dt.getMonth() + 1;
+        state.home = { y: y, m: m, d: clampDay(y, m, state.home.d) };
+        syncHash();
+        renderHome();
+      } else {
+        var st = state.month;
+        var d2 = new Date(st.y, st.m - 1 + delta, 1);
+        var ny = d2.getFullYear(), nm = d2.getMonth() + 1;
+        // 保留原选中日（若该月不存在由 renderMonth 兜底重选）
+        var maxd = daysInMonth(ny, nm);
+        state.month = { y: ny, m: nm, sel: Math.min(st.sel || 1, maxd) };
+        state.home = { y: ny, m: nm, d: 1 };
+        syncHash();
+        renderMonth();
+      }
+    }
+
+    function goToday() {
+      state.home = { y: state.today.y, m: state.today.m, d: state.today.d };
+      state.month = { y: state.today.y, m: state.today.m, sel: state.today.d };
+      setActive('home');
+      syncHash();
+      renderHome();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    /* ---------- 搜索：日期 / 节日 / 节气 ---------- */
+    function parseQuery(q) {
+      var m;
+      if ((m = q.match(/^(\d{4})[-\/.年](\d{1,2})[-\/.月](\d{1,2})日?$/))) return { y: +m[1], m: +m[2], d: +m[3] };
+      if ((m = q.match(/^(\d{4})(\d{2})(\d{2})$/))) return { y: +m[1], m: +m[2], d: +m[3] };
+      if ((m = q.match(/^(\d{1,2})[-\/.月](\d{1,2})日?$/))) return { y: state.today.y, m: +m[1], d: +m[2] };
+      if ((m = q.match(/^(\d{4})[-\/.年](\d{1,2})月?$/))) return { y: +m[1], m: +m[2], d: 1 };
+      if ((m = q.match(/^(\d{4})(\d{2})$/))) return { y: +m[1], m: +m[2], d: 1 };
+      if (/^\d{4}$/.test(q)) return { y: +q, m: 1, d: 1 };
+      return null;
+    }
+
+    function findByName(name) {
+      var base = state.today.y * 12 + (state.today.m - 1);
+      var offs = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11];
+      var i = 0;
+      function step() {
+        if (i >= offs.length) return Promise.resolve(false);
+        var total = base + offs[i++];
+        var y = Math.floor(total / 12), m = total % 12 + 1;
+        if (y < 1901 || y > 2099) return step();
+        return getMonth(y, m).catch(function () { return null; }).then(function (mvm) {
+          if (!mvm) return step();
+          var hit = null;
+          mvm.days.forEach(function (c) {
+            if (hit) return;
+            var pool = [c.termName].concat(c.festAll, c.names);
+            if (pool.some(function (s) { return s && s.indexOf(name) >= 0; })) hit = c;
+          });
+          if (hit) {
+            state.month = { y: y, m: m, sel: hit.d };
+            state.home = { y: y, m: m, d: hit.d };
+            setActive('month');
+            syncHash();
+            renderMonth();
+            showToast(m + '月' + hit.d + '日：' + (hit.names[0] || hit.termName));
+            return true;
+          }
+          return step();
+        });
+      }
+      return step();
+    }
+
+    /* ---------- 事件绑定 ---------- */
+    document.querySelectorAll('.nav-item[data-target]').forEach(function (el) {
+      el.addEventListener('click', function () { goPage(el.dataset.target); });
+    });
+    document.querySelectorAll('.nav-item[data-mock]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        showToast('「' + el.dataset.mock + '」栏目尚未制作，当前可查看首页与月历');
+      });
+    });
+    document.querySelectorAll('[data-nav]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var act = el.dataset.nav;
+        if (act === 'home-prev') shiftMonth('home', -1);
+        else if (act === 'home-next') shiftMonth('home', 1);
+        else if (act === 'month-prev') shiftMonth('month', -1);
+        else if (act === 'month-next') shiftMonth('month', 1);
+      });
+    });
+    $('#brandLink').addEventListener('click', function (e) { e.preventDefault(); goToday(); });
+    $('#homeCalTitle').addEventListener('click', goToday);
+    $('#monthCalTitle').addEventListener('click', function () {
+      state.month = { y: state.today.y, m: state.today.m, sel: state.today.d };
+      syncHash();
+      renderMonth();
+      showToast('已回到本月');
+    });
+
+    $('#searchForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var q = $('#searchInput').value.trim().replace(/[\s　]/g, '');
+      if (!q) { showToast('请输入日期或节日，例如 2026-11-13、2026-11、元宵节'); return; }
+      var hit = parseQuery(q);
+      if (hit) {
+        if (hit.m < 1 || hit.m > 12 || hit.d < 1 || hit.d > 31) { showToast('日期格式无法识别：' + q); return; }
+        state.home = { y: hit.y, m: hit.m, d: clampDay(hit.y, hit.m, hit.d) };
+        state.month = { y: hit.y, m: hit.m, sel: state.home.d };
+        setActive('home');
+        syncHash();
+        renderHome();
+        showToast('已定位到 ' + hit.y + '年' + hit.m + '月' + state.home.d + '日');
+      } else {
+        showToast('正在按「' + q + '」检索…');
+        findByName(q).then(function (ok) {
+          if (!ok) showToast('附近一年内未找到「' + q + '」，可试试具体节日名');
+        });
+      }
+    });
+
+    window.addEventListener('hashchange', function () { applyHash(); });
+
+    /* ---------- 启动 ---------- */
+    applyHash();
+    syncHash();
+  })();
+  </script>
+</body>
+</html>

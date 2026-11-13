@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#faf7f3" />
+  <meta name="description" content="万年历 · 首页与月历静态设计原型" />
+  <title>万年历 · 中式日历设计原型</title>
+  <style>
+    :root{
+      --bg:#faf8f5; --paper:#fffdfb; --ink:#2f2825; --muted:#918681;
+      --red:#a62926; --red-dark:#8f211f; --red-soft:#fff1ec;
+      --green:#5c7f4e; --green-soft:#f3f7ef; --line:#e8dcd3;
+      --shadow:0 9px 30px rgba(107,68,45,.036);
+      --serif:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","SimSun",serif;
+      --sans:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(ellipse at 9% 3%,rgba(202,164,129,.065),transparent 32%),var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:2px solid #ae6455;outline-offset:3px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .sprite{position:absolute;width:0;height:0;overflow:hidden}
+    .icon{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .site-header{height:76px;border-bottom:1px solid #eee5df;background:rgba(255,253,251,.91);position:relative;z-index:5;box-shadow:0 3px 14px rgba(83,46,34,.018)}
+    .header-inner{max-width:1600px;height:100%;margin:auto;padding:0 34px;display:flex;align-items:center;gap:20px}
+    .brand{display:flex;align-items:center;gap:18px;flex:none;text-decoration:none;color:var(--red-dark);margin-right:auto;white-space:nowrap;position:relative}
+    .brand::after{content:"";width:138px;height:49px;position:absolute;left:205px;top:5px;opacity:.25;pointer-events:none;background:linear-gradient(140deg,transparent 32%,#d3bcb0 33% 47%,transparent 48%) 0 13px/56px 40px no-repeat,linear-gradient(30deg,transparent 32%,#d5c0b4 33% 47%,transparent 48%) 42px 0/75px 44px no-repeat}
+    .brand-stamp{height:40px;width:40px;display:grid;place-items:center;border-radius:7px;background:linear-gradient(140deg,#bb3a35,#921f1e);color:white;font-size:25px;font-family:var(--serif);font-weight:800;box-shadow:0 3px 10px #a52c2822;position:relative}
+    .brand-stamp::before,.brand-stamp::after{content:"";position:absolute;top:-4px;width:2px;height:10px;border-radius:2px;background:var(--red-dark)}
+    .brand-stamp::before{left:11px}.brand-stamp::after{right:11px}
+    .brand-divider{height:29px;width:1px;background:#c8a596}
+    .brand-name{font-family:var(--serif);font-size:29px;font-weight:800;letter-spacing:3px}
+    .main-nav{display:flex;align-items:center;gap:7px;flex:none;height:100%;position:relative;z-index:2}
+    .nav-item{height:100%;padding:0 14px;display:grid;place-items:center;background:none;border:0;color:#302a27;font-size:15px;letter-spacing:.5px;position:relative;white-space:nowrap}
+    .nav-item:hover{color:var(--red)}
+    .nav-item.is-active{color:var(--red-dark);font-weight:700}
+    .nav-item.is-active::after{content:"";position:absolute;bottom:14px;left:14px;right:14px;height:2px;background:var(--red);border-radius:8px}
+    .search-wrap{display:flex;align-items:center;gap:8px;width:229px;height:37px;border:1px solid #d7bdb0;border-radius:22px;padding:0 13px 0 12px;flex:none;color:#6f5750;position:relative;z-index:2;background:#fffdfa}
+    .search-wrap .icon{width:17px;height:17px}
+    .search-wrap input{min-width:0;width:100%;border:none;background:transparent;outline:0;font-size:12.5px;color:var(--ink)}
+    .search-wrap input::placeholder{color:#9c8e88}
+    .page-shell{max-width:1600px;padding:20px 18px 34px;margin:auto}
+    .page{display:none;animation:fadeUp .27s ease both}
+    .page.is-active{display:block}
+    @keyframes fadeUp{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .primary-grid{display:grid;grid-template-columns:minmax(0,1.56fr) minmax(0,1fr);gap:18px;align-items:stretch}
+    .left-stack{min-width:0;display:flex;flex-direction:column;gap:18px}
+    .panel{position:relative;min-width:0;overflow:hidden;background:linear-gradient(112deg,#fffdfb 0%,#fffdfa 60%,#fffbf7 100%);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+    .hero{flex:1;min-height:356px;padding:39px 31px 50px;background:radial-gradient(ellipse at 12% 5%,rgba(243,231,221,.38),transparent 48%),linear-gradient(120deg,#fffdfb,#fffaf7)}
+    .hero-content{display:grid;grid-template-columns:40% 60%;height:100%;position:relative;z-index:1;align-items:center}
+    .hero-big{display:flex;align-items:center;justify-content:center;gap:13px;min-width:0;padding-right:21px}
+    .vertical-tag{border:1px solid #ba765a;outline:1px solid #e5bcab;outline-offset:4px;font-family:var(--serif);font-weight:800;color:var(--red);font-size:25px;line-height:1.45;writing-mode:vertical-rl;letter-spacing:3px;padding:9px 2px;border-radius:3px;background:rgba(255,255,255,.65)}
+    .big-number{font-family:Georgia,'Times New Roman',var(--serif);font-weight:500;font-size:clamp(108px,11.7vw,174px);line-height:1;color:#b32929;letter-spacing:-10px;white-space:nowrap;text-shadow:1px 2px 0 rgba(129,38,38,.05)}
+    .hero-detail{height:100%;border-left:1px solid #d9baac;padding-left:30px;display:flex;flex-direction:column;justify-content:center;gap:11px;min-width:0}
+    .hero-heading{font-family:var(--serif);font-size:clamp(24px,2.05vw,32px);font-weight:800;letter-spacing:.8px;white-space:nowrap;line-height:1.4;margin:0 0 4px}
+    .hero-info{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.5px;min-width:0;line-height:1.45}
+    .hero-info .icon{color:#ba3f2e;width:22px;height:22px}
+    .hero-info.double{gap:15px}
+    .hero-info .small-separator{width:1px;height:22px;background:#e0c4b7;margin:0 8px}
+    .season-pill{border:1px solid #d7a18d;border-radius:30px;display:inline-flex;align-self:flex-start;align-items:center;gap:10px;padding:7px 18px;margin-top:4px;color:var(--red);background:#fff7f2;font-family:var(--serif);font-size:18px;font-weight:800;letter-spacing:1.3px}
+    .season-pill .icon{width:24px;height:24px}
+    .hero-note{position:absolute;bottom:17px;left:20px;right:20px;z-index:2;text-align:center;color:#786e69;font-family:var(--serif);font-size:14px;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .deco-plum{position:absolute;top:-5px;left:0;width:230px;height:118px;z-index:0;pointer-events:none;opacity:.97}
+    .deco-cloud{position:absolute;right:11px;top:12px;width:85px;height:60px;fill:none;stroke:#e7c9ab;stroke-width:1.3;opacity:.55;pointer-events:none}
+    .deco-cloud.lower{top:auto;bottom:31px;right:9px;width:104px;height:56px}
+    .deco-mountain{position:absolute;bottom:-3px;left:0;width:100%;height:96px;pointer-events:none;opacity:.42;z-index:0}
+    .auspicious-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .auspicious{min-height:139px;display:flex;align-items:center;gap:22px;padding:21px 19px}
+    .auspicious.good{background:linear-gradient(115deg,#fcfdf9,#f4f7ee)}
+    .auspicious.bad{background:linear-gradient(115deg,#fffdfb,#fdf1ef)}
+    .auspicious-seal{display:grid;place-items:center;flex:none;width:64px;height:70px;border-radius:15px;border:2px double #7d9d6b;background:var(--green);color:white;font-family:var(--serif);font-size:29px;font-weight:800;box-shadow:inset 0 0 0 3px #edf3e8,0 0 0 1px #abc19b}
+    .bad .auspicious-seal{background:#c34033;border-color:#da7d6b;box-shadow:inset 0 0 0 3px #fff1ec,0 0 0 1px #e6aaa2}
+    .auspicious-text{border-left:1px solid #d8cabe;padding-left:19px;line-height:1.95;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:.35px}
+    .auspicious .small-flourish{position:absolute;right:2px;bottom:-11px;font-size:82px;font-family:var(--serif);color:#e8cbb5;opacity:.44;line-height:1;pointer-events:none}
+    .calendar-panel{padding:22px 25px 22px;display:flex;flex-direction:column;min-height:513px}
+    .calendar-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;min-height:38px}
+    .cal-title{font-family:var(--serif);font-weight:800;font-size:25px;letter-spacing:1px;white-space:nowrap}
+    .cal-arrow{width:40px;height:35px;display:grid;place-items:center;border:1px solid #e1c9bb;background:#fffaf5;color:#8b3e31;border-radius:9px;transition:.18s}
+    .cal-arrow:hover{background:#fff0ea;border-color:#c88e7a}
+    .cal-arrow .icon{width:21px;height:21px}
+    .calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:40px;border-bottom:1px solid #eae2db;align-items:center;margin-bottom:0;font-family:var(--serif);font-size:17px;font-weight:700;text-align:center}
+    .weekend-color{color:var(--red)!important}
+    .calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));flex:1;min-height:360px}
+    .day-cell{min-width:0;min-height:0;position:relative;border:0;border-bottom:1px solid #f0eae4;background:transparent;text-align:center;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:1px;border-radius:0;padding:4px 1px 5px;color:#302925;transition:.16s}
+    .day-cell:nth-last-child(-n+7){border-bottom:none}
+    .day-cell:hover:not(.is-outside){background:#fbf3ee;border-radius:7px}
+    .day-cell.is-outside{color:#aea8a5}
+    .day-cell.is-outside .day-lunar{color:#b8b1ad}
+    .day-number{font:600 23px/1.1 Georgia,var(--serif);letter-spacing:-.4px}
+    .day-lunar{font-family:var(--serif);color:#796c66;font-size:11px;line-height:1.35;white-space:nowrap}
+    .day-cell.is-weekend:not(.is-outside) .day-number{color:var(--red)}
+    .day-cell.is-selected{background:linear-gradient(160deg,#af2927,#be3c33);border-radius:9px;box-shadow:0 4px 14px #a92e2729;color:white;border-bottom-color:transparent}
+    .day-cell.is-selected .day-number,.day-cell.is-selected .day-lunar{color:#fff}
+    .day-cell.is-selected:hover{background:linear-gradient(160deg,#ae2927,#c54437)}
+    .day-event{font-size:10px;line-height:1.3;color:#aa3d2b;border:1px solid #edc1ae;background:#fff0e8;padding:1px 5px;border-radius:14px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+    .day-cell.is-selected .day-event{background:#e7b28e40;border-color:#efd1bb;color:#fff}
+    .subsection-grid{display:grid;grid-template-columns:minmax(0,1.46fr) minmax(0,1fr);gap:18px;margin-top:20px}
+    .info-panel,.countdown-panel{min-height:238px;padding:18px 22px 20px}
+    .section-heading{display:flex;gap:11px;align-items:center;font-family:var(--serif);font-weight:800;font-size:20px;color:var(--red-dark);letter-spacing:1px;margin:0;padding-bottom:14px;border-bottom:1px solid #e9ddd3;position:relative;z-index:1}
+    .section-heading::before{content:"";display:block;flex:none;width:4px;height:23px;border-radius:2px;background:#ad2927}
+    .section-heading::after{content:"〰";position:absolute;right:1px;top:-14px;font-size:52px;font-family:var(--serif);font-weight:400;color:#e6bc94;opacity:.66}
+    .facts-grid{display:grid;grid-template-columns:1fr 1.35fr;row-gap:0;column-gap:27px;margin-top:7px}
+    .fact{display:flex;align-items:center;gap:11px;padding:11px 3px;border-bottom:1px solid #efe7e0;min-width:0;font-family:var(--serif);font-size:16px;white-space:nowrap}
+    .fact:nth-last-child(-n+2){border-bottom:none}
+    .fact .icon{color:#c04c37;width:22px;height:22px}
+    .countdown-content{display:flex;align-items:center;justify-content:center;gap:21px;height:153px}
+    .lantern-circle{width:90px;height:90px;border-radius:50%;display:grid;place-items:center;background:#faeee9;flex:none;color:var(--red)}
+    .lantern-circle svg{width:58px;height:70px}
+    .countdown-copy{padding-left:21px;border-left:1px solid #e0c7bb;font-family:var(--serif)}
+    .countdown-lead{font-size:22px;white-space:nowrap}
+    .countdown-lead strong{font-size:51px;color:var(--red);font-family:Georgia,var(--serif);font-weight:500;vertical-align:-3px;margin:0 4px}
+    .countdown-date{color:#776c67;margin-top:0;font-size:15px}
+    .bottom-note{text-align:center;font-size:12px;color:#a49a95;margin-top:18px}
+    /* 月历页面 */
+    .month-hero{min-height:481px;padding:38px 25px 65px}
+    .month-hero .hero-content{grid-template-columns:42% 58%}
+    .month-hero .hero-big{gap:14px;padding-right:12px}
+    .month-hero .big-number{font-size:clamp(105px,12vw,169px);letter-spacing:-8px;white-space:nowrap}
+    .month-hero .big-number span{font-family:var(--serif);font-size:.63em;letter-spacing:-4px}
+    .month-hero .hero-detail{padding-left:28px;gap:11px}
+    .month-hero .hero-heading{font-size:clamp(24px,2.06vw,31px);margin-bottom:4px}
+    .month-hero .hero-info{font-size:16.2px;font-weight:600;gap:12px}
+    .month-hero .hero-info .icon{width:21px;height:21px}
+    .month-hero .hero-info.month-keywords{flex-wrap:wrap;gap:7px}
+    .month-hero .hero-info.month-keywords>.icon{margin-right:5px}
+    .tiny-tag{font-size:12px;font-family:var(--serif);border:1px solid #e4ada2;background:#fff4f0;color:#aa2e2b;border-radius:18px;padding:3px 9px;letter-spacing:0;white-space:nowrap}
+    .month-hero .hero-note{font-size:13px;bottom:25px}
+    .month-calendar{min-height:481px}
+    .month-calendar .calendar-days{min-height:328px}
+    .month-calendar .day-number{font-size:21px}
+    .month-calendar .day-lunar{font-size:10px}
+    .month-bottom{display:grid;grid-template-columns:1fr 1fr 1.35fr .97fr;gap:16px;margin-top:20px;align-items:stretch}
+    .month-card{min-height:278px;padding:18px 18px 15px}
+    .month-card .section-heading{font-size:19px}
+    .term-item{display:flex;align-items:center;gap:13px;padding:19px 2px 17px;border-bottom:1px solid #ebe0d8}
+    .term-item:last-child{border-bottom:0}
+    .term-illustration{flex:none;width:69px;height:69px;border:1px solid #e5d1c1;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fffdf8,#f6eee4);display:grid;place-items:center;font-size:39px;font-family:var(--serif)}
+    .term-item:nth-of-type(3) .term-illustration{background:linear-gradient(160deg,#f7fbf2,#eff6ed)}
+    .term-when{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--red)}
+    .term-desc{font-family:var(--serif);font-size:12.5px;color:#6b625d;margin-top:4px;white-space:nowrap}
+    .festival-list{list-style:none;padding:5px 0 0;margin:0}
+    .festival-list li{display:flex;align-items:center;gap:9px;border-bottom:1px solid #eee5df;padding:10px 1px;font-family:var(--serif);font-size:12.5px;white-space:nowrap}
+    .festival-list li:last-child{border-bottom:none}
+    .festival-list .icon{width:15px;height:15px;color:#c04737}
+    .festival-date{font-weight:800;min-width:52px;color:#40322d}
+    .selected-panel-top{display:flex;align-items:center;gap:15px;margin-top:13px}
+    .selected-lantern{height:62px;width:62px;flex:none;border-radius:50%;background:#fdf0e9;display:grid;place-items:center;color:var(--red)}
+    .selected-lantern svg{width:38px;height:50px}
+    .selected-text{border-left:1px solid #e5cbbf;padding-left:15px;min-width:0}
+    .selected-title{font-family:var(--serif);font-size:23px;font-weight:800;white-space:nowrap}
+    .selected-subtitle{font-family:var(--serif);font-size:14px;margin-top:4px;color:#736862}
+    .selected-subtitle .tiny-tag{margin-left:7px}
+    .mini-yi-ji{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:15px}
+    .mini-yi-ji>div{display:flex;gap:9px;min-height:83px;border:1px solid #e0e7d7;background:#f8faf4;border-radius:10px;padding:10px}
+    .mini-yi-ji>div:last-child{background:#fff8f6;border-color:#f0ded8}
+    .mini-badge{width:28px;height:30px;border-radius:8px;display:grid;place-items:center;color:white;background:var(--green);font-family:var(--serif);font-size:16px;font-weight:800;flex:none}
+    .mini-yi-ji>div:last-child .mini-badge{background:#c33e34}
+    .mini-copy{font-family:var(--serif);font-size:12px;line-height:1.72;color:#554d46}
+    .detail-footer{display:flex;justify-content:space-between;gap:9px;margin-top:12px}
+    .detail-footer>span{border:1px solid #eed8c6;background:#fff8f1;border-radius:23px;padding:5px 9px;color:#a64231;font-family:var(--serif);font-size:12px;white-space:nowrap}
+    .stat-list{list-style:none;padding:7px 0 0;margin:0}
+    .stat-list li{display:flex;gap:13px;align-items:center;border-bottom:1px solid #eae1d9;padding:14px 3px;font-family:var(--serif);font-size:14px;white-space:nowrap}
+    .stat-list li:last-child{border-bottom:none}
+    .stat-list .icon{color:#c24632;width:20px;height:20px}
+    .stat-list strong{color:var(--red);font-weight:700}
+    .toast{position:fixed;left:50%;bottom:36px;transform:translate(-50%,15px);border:1px solid #dcc2b5;border-radius:9px;padding:11px 20px;background:#fffaf5;color:#7d3c32;box-shadow:0 8px 22px #6a352327;opacity:0;pointer-events:none;transition:.25s;z-index:10;font-size:13px;white-space:nowrap}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1440px){.header-inner{padding:0 22px;gap:13px}.brand{gap:12px}.brand-name{font-size:25px}.brand::after{display:none}.nav-item{padding:0 10px;font-size:14px}.search-wrap{width:205px}.hero{padding-left:20px;padding-right:21px}.hero-detail{padding-left:22px}.hero-info{font-size:17px}.big-number{font-size:145px}.hero-heading{font-size:28px}.auspicious{gap:13px}.auspicious-text{padding-left:13px;font-size:15px}.month-hero .hero-info{font-size:15px}.month-hero .hero-heading{font-size:26px}.month-hero .big-number{font-size:145px}.month-card{padding-left:14px;padding-right:14px}.term-illustration{width:57px;height:57px;font-size:31px}.term-when{font-size:16px}.festival-list li{font-size:12px}.detail-footer>span{font-size:11px}.selected-title{font-size:20px}}
+    @media(max-width:1190px){.site-header{height:auto;min-height:77px}.header-inner{flex-wrap:wrap;padding:12px 22px;row-gap:4px}.main-nav{order:3;width:100%;height:42px;justify-content:center}.nav-item{height:42px;padding:0 13px}.nav-item.is-active::after{bottom:0}.search-wrap{margin-left:auto}.primary-grid{grid-template-columns:1fr 1fr}.hero,.month-hero{padding-top:32px}.hero-content,.month-hero .hero-content{grid-template-columns:37% 63%}.hero-big{gap:9px}.big-number,.month-hero .big-number{font-size:clamp(83px,10vw,135px)}.vertical-tag{font-size:20px}.hero-heading,.month-hero .hero-heading{font-size:22px}.hero-info,.month-hero .hero-info{font-size:14px;gap:8px}.hero-info .icon{width:18px;height:18px}.season-pill{font-size:14px}.auspicious-row{grid-template-columns:1fr;gap:11px}.auspicious{min-height:83px;padding:13px 17px}.auspicious-seal{width:42px;height:46px;font-size:21px;border-radius:10px}.auspicious-text{font-size:13px}.calendar-panel{min-height:550px}.month-hero,.month-calendar{min-height:490px}.month-bottom{grid-template-columns:repeat(2,1fr)}.month-card{min-height:265px}.facts-grid{grid-template-columns:1fr 1fr}.fact{font-size:13px}.countdown-lead{font-size:17px}.countdown-lead strong{font-size:39px}.lantern-circle{width:70px;height:70px}}
+    @media(max-width:800px){.primary-grid,.subsection-grid{grid-template-columns:1fr}.hero{min-height:355px}.calendar-panel{min-height:490px}.month-hero,.month-calendar{min-height:470px}.auspicious-row{grid-template-columns:1fr 1fr}.auspicious{min-height:108px}.main-nav{justify-content:flex-start;overflow:auto hidden;scrollbar-width:none}.main-nav::-webkit-scrollbar{display:none}.nav-item{flex:none}.page-shell{padding:15px 12px 30px}.hero-content,.month-hero .hero-content{grid-template-columns:40% 60%}.big-number,.month-hero .big-number{font-size:clamp(100px,16vw,155px)}.month-bottom{gap:12px}.month-card{min-height:260px}}
+    @media(max-width:550px){.header-inner{padding:11px 14px}.brand-name{font-size:22px}.brand-stamp{width:34px;height:34px;font-size:21px}.brand{gap:9px}.search-wrap{width:150px}.search-wrap input{font-size:11px}.page-shell{padding:12px 10px 25px}.hero,.month-hero{padding:58px 13px 50px;min-height:380px}.hero-content,.month-hero .hero-content{grid-template-columns:33% 67%}.hero-big,.month-hero .hero-big{flex-direction:column;gap:15px;padding-right:8px}.vertical-tag{writing-mode:horizontal-tb;font-size:15px;letter-spacing:3px;outline-offset:2px;padding:2px 5px}.big-number,.month-hero .big-number{font-size:clamp(84px,21vw,113px);letter-spacing:-6px}.month-hero .big-number span{font-size:.43em}.hero-detail,.month-hero .hero-detail{padding-left:13px;gap:10px}.hero-heading,.month-hero .hero-heading{font-size:18px;white-space:normal}.hero-info,.month-hero .hero-info{font-size:12.5px;gap:5px;letter-spacing:0}.hero-info .icon,.month-hero .hero-info .icon{width:16px;height:16px}.hero-info.double{flex-wrap:wrap;gap:6px}.hero-info .small-separator{display:none}.season-pill{font-size:12px;padding:5px 8px;gap:5px}.season-pill .icon{width:17px;height:17px}.auspicious-row{grid-template-columns:1fr}.auspicious{min-height:95px}.calendar-panel{padding:16px 10px;min-height:430px}.calendar-days{min-height:315px}.day-number{font-size:19px}.day-lunar{font-size:10px}.day-event{font-size:9px;padding:0 2px}.cal-title{font-size:21px}.cal-arrow{width:34px}.subsection-grid{gap:12px;margin-top:12px}.month-bottom{grid-template-columns:1fr}.info-panel,.countdown-panel{padding:14px}.facts-grid{grid-template-columns:1fr}.fact:nth-last-child(2){border-bottom:1px solid #efe7e0}.fact{font-size:14px}.countdown-lead{font-size:17px}.month-card{min-height:0}.hero-note,.month-hero .hero-note{font-size:11px}.deco-plum{width:160px}.month-hero .hero-info.month-keywords .tiny-tag{padding:1px 6px;font-size:10px}}
+  </style>
+</head>
+<body>
+  <!-- 所有图标与装饰均为原生内联 SVG；无需联网或第三方依赖 -->
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 18h3"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.8A8.5 8.5 0 0 1 9.2 3.5a8.5 8.5 0 1 0 11.3 11.3Z"/></symbol>
+    <symbol id="i-yinyang" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c4.5 4.5-4.5 4.5 0 9s-4.5 4.5 0 9"/><circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.8 2.9 6.2 6.8.8-5 4.8 1.2 6.7L12 18.1l-5.9 3.2 1.2-6.7-5-4.8 6.8-.8Z"/></symbol>
+    <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M8.5 3.5 12 7l3.5-3.5M8.5 20.5 12 17l3.5 3.5M4.1 11.5 8.9 10M19.9 12.5 15.1 14M4.1 12.5 8.9 14M19.9 11.5 15.1 10"/></symbol>
+    <symbol id="i-rabbit" viewBox="0 0 24 24"><path d="M8 11C5 8 4 2 6 2c1.9 0 4.4 3 5 7m3 0c.6-4 2.4-7 4.4-7 2.1 0 1 7-2 10 2.3 1.3 3.6 3.5 3.6 5.3A4.8 4.8 0 0 1 15 22H8a4.8 4.8 0 0 1-4.8-4.8c0-3.2 1.9-5.1 4.8-6.2Z"/><circle cx="8.5" cy="15.5" r=".8" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r=".8" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 2h12M6 22h12M7 3c0 5 5 5 5 9s-5 4-5 9m10-18c0 5-5 5-5 9s5 4 5 9"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20.5 3.5c-8.1.2-15.3 2.2-16.7 10.3a6.1 6.1 0 0 0 6.4 6.7c7.3-.8 9.4-10.4 10.3-17Z"/><path d="M4 21c2-6 7-10 13-13"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 3H4a1 1 0 0 0-1 1v8l9 9 9-9-9-9Z"/><circle cx="8.1" cy="8" r="1.5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-7-8 7-11 3-1 10-4 12 8 1 5 5 9-7 13-6 2-11 5-12-8-1-6-4-10 8-12 3-1Z"/></symbol>
+    <symbol id="i-snake" viewBox="0 0 24 24"><path d="M7 18c-3-3-2-7 2-8s6-1 6-4-4-3-4-1m4 1c4-4 7 1 4 4s-6 3-6 7-6 6-9 2"/><circle cx="16.7" cy="5.5" r=".7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 1v3M12 20v3M1 12h3m16 0h3M4.2 4.2l2.2 2.2m11.2 11.2 2.2 2.2m0-15.6-2.2 2.2M6.4 17.6l-2.2 2.2"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10H3V11Z"/><path d="M9 21v-7h6v7"/></symbol>
+    <symbol id="i-lantern" viewBox="0 0 64 78"><path d="M32 1v10M22 12h20M32 67v10M22 66h20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M19 12c-13 8-15 36-1 50h28c14-14 12-42-1-50H19Z" fill="currentColor" opacity=".9"/><path d="M24 12c-9 10-9 39 0 50m16-50c9 10 9 39 0 50M32 12v50" stroke="#fff0e6" stroke-width="2" fill="none"/><path d="M17 62h30M20 66h24" stroke="currentColor" stroke-width="3"/><path d="m28 74 4 3 4-3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </svg>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home" id="brandLink" aria-label="万年历首页">
+        <span class="brand-stamp">历</span><span class="brand-divider"></span><span class="brand-name">万年历</span>
+      </a>
+      <nav class="main-nav" aria-label="顶部导航">
+        <button type="button" class="nav-item is-active" data-target="home" aria-current="page">首页</button>
+        <button type="button" class="nav-item" data-target="month">月历</button>
+        <button type="button" class="nav-item" data-mock="黄历">黄历</button>
+        <button type="button" class="nav-item" data-mock="节气">节气</button>
+        <button type="button" class="nav-item" data-mock="节日">节日</button>
+        <button type="button" class="nav-item" data-mock="择吉">择吉</button>
+        <button type="button" class="nav-item" data-mock="生肖">生肖</button>
+        <button type="button" class="nav-item" data-mock="星座">星座</button>
+        <button type="button" class="nav-item" data-mock="历史上的今天">历史上的今天</button>
+      </nav>
+      <form class="search-wrap" id="searchForm" role="search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input id="searchInput" aria-label="查询日期" placeholder="查询日期 / 节日 / 节气" autocomplete="off" />
+      </form>
+    </div>
+  </header>
+  <main class="page-shell">
+    <!-- 首页：2023-11-22 日历详情 -->
+    <section class="page is-active" id="home" aria-label="首页日历详情">
+      <div class="primary-grid">
+        <div class="left-stack">
+          <article class="panel hero">
+            <svg class="deco-plum" viewBox="0 0 260 145" aria-hidden="true">
+              <path d="M-4 10C23 37 29 41 64 44M39 29C69 25 84 19 108-4M63 44C88 68 114 72 153 73M98 66c9-26 40-36 59-38M56 43c-10 30-4 48 13 61" fill="none" stroke="#75483a" stroke-width="4" stroke-linecap="round"/>
+              <g fill="#c83e33" stroke="#fff0e9" stroke-width="1.2"><g transform="translate(27 29)"><circle cx="0" cy="-8" r="5"/><circle cx="8" cy="-2" r="5"/><circle cx="5" cy="7" r="5"/><circle cx="-5" cy="7" r="5"/><circle cx="-8" cy="-2" r="5"/></g><g transform="translate(65 44)"><circle cx="0" cy="-9" r="5"/><circle cx="8" cy="-3" r="5"/><circle cx="5" cy="6" r="5"/><circle cx="-5" cy="6" r="5"/><circle cx="-8" cy="-3" r="5"/></g><g transform="translate(104 16)"><circle cx="0" cy="-8" r="4"/><circle cx="8" cy="-2" r="4"/><circle cx="4" cy="6" r="4"/><circle cx="-4" cy="6" r="4"/><circle cx="-8" cy="-2" r="4"/></g><g transform="translate(115 72)"><circle cx="0" cy="-6" r="4"/><circle cx="7" cy="-1" r="4"/><circle cx="4" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-7" cy="-1" r="4"/></g><g transform="translate(58 89)"><circle cx="0" cy="-6" r="4"/><circle cx="6" cy="-1" r="4"/><circle cx="3" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-6" cy="-1" r="4"/></g></g>
+              <g fill="#ecd0a1"><circle cx="27" cy="29" r="2"/><circle cx="65" cy="44" r="2"/><circle cx="104" cy="16" r="1.5"/><circle cx="115" cy="72" r="1.5"/><circle cx="58" cy="89" r="1.5"/></g>
+              <g fill="#c83e33"><circle cx="164" cy="22" r="3"/><circle cx="176" cy="41" r="2.5"/><circle cx="160" cy="77" r="3"/></g>
+            </svg>
+            <svg class="deco-cloud" viewBox="0 0 110 65" aria-hidden="true"><path d="M12 30c-16-12 4-30 16-15 12-24 40-12 33 4 28-7 37 26 15 32-10 4-20-7-13-15 10-11 23 3 13 10M7 47c10 11 31 11 42 0"/></svg>
+            <svg class="deco-cloud lower" viewBox="0 0 110 65" aria-hidden="true"><path d="M3 44c18-17 34-8 42 3 19-24 44-19 58-5M26 47c-8-19 12-28 24-17 15-21 41-14 36 4"/></svg>
+            <svg class="deco-mountain" viewBox="0 0 900 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 76 70 34 125 70 182 25 258 72 350 41 430 83 513 52 582 81 669 41 750 70 820 24 900 76v24H0Z" fill="#ead6c4"/><path d="M0 86 97 59 177 88 262 55 366 89 480 63 550 92 665 64 757 92 832 57 900 90v10H0Z" fill="#f0e4d9"/></svg>
+            <div class="hero-content">
+              <div class="hero-big"><div class="vertical-tag">万年历</div><div class="big-number">22</div></div>
+              <div class="hero-detail">
+                <h1 class="hero-heading">2023年11月22日 星期三</h1>
+                <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg>农历十月初十</div>
+                <div class="hero-info"><svg class="icon"><use href="#i-yinyang"/></svg>癸卯年 癸亥月 甲申日</div>
+                <div class="hero-info double"><svg class="icon"><use href="#i-rabbit"/></svg>生肖：兔<span class="small-separator"></span><svg class="icon"><use href="#i-star"/></svg>星座：射手座</div>
+                <div class="season-pill"><svg class="icon"><use href="#i-snow"/></svg>今日节气：小雪</div>
+              </div>
+            </div>
+            <div class="hero-note">今天是2023年11月22日，农历十月初十，星期三，今日节气为小雪。</div>
+          </article>
+          <div class="auspicious-row">
+            <section class="panel auspicious good"><div class="auspicious-seal">宜</div><div class="auspicious-text">祭祀、沐浴、结网、移柩、<br />入殓、除服、成服</div><span class="small-flourish">〰</span></section>
+            <section class="panel auspicious bad"><div class="auspicious-seal">忌</div><div class="auspicious-text">安床、开业、交易、出货财、<br />安葬、修坟、结婚、作灶</div><span class="small-flourish">〰</span></section>
+          </div>
+        </div>
+        <section class="panel calendar-panel" aria-label="2023年11月月历">
+          <div class="calendar-header"><button class="cal-arrow" data-static-month="2023年11月" aria-label="上个月"><svg class="icon"><use href="#i-left"/></svg></button><div class="cal-title">2023年11月 ▾</div><button class="cal-arrow" data-static-month="2023年11月" aria-label="下个月"><svg class="icon"><use href="#i-right"/></svg></button></div>
+          <div class="calendar-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="weekend-color">六</span><span class="weekend-color">日</span></div>
+          <div class="calendar-days" id="homeCalendar"></div>
+        </section>
+      </div>
+      <div class="subsection-grid">
+        <section class="panel info-panel"><h2 class="section-heading">相关信息</h2><div class="facts-grid">
+          <div class="fact"><svg class="icon"><use href="#i-calendar"/></svg><span>公历：2023/11</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-moon"/></svg><span>农历：二〇二三年 十月初十</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-leaf"/></svg><span>节气：小雪</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-hourglass"/></svg><span>距离下一个节气：大雪（15天后）</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-rabbit"/></svg><span>生肖：兔</span></div>
+          <div class="fact"><svg class="icon"><use href="#i-star"/></svg><span>星座：射手座</span></div>
+        </div></section>
+        <section class="panel countdown-panel"><h2 class="section-heading">节日与倒计时</h2><div class="countdown-content"><div class="lantern-circle"><svg viewBox="0 0 64 78"><use href="#i-lantern"/></svg></div><div class="countdown-copy"><div class="countdown-lead">距离春节还有 <strong>1172</strong> 天</div><div class="countdown-date">春节：2027年02月06日</div></div></div></section>
+      </div>
+    </section>
+
+    <!-- 月历：2025-02 月度总览 -->
+    <section class="page" id="month" aria-label="月历总览">
+      <div class="primary-grid">
+        <article class="panel hero month-hero">
+          <svg class="deco-plum" viewBox="0 0 260 145" aria-hidden="true"><path d="M-4 10C23 37 29 41 64 44M39 29C69 25 84 19 108-4M63 44C88 68 114 72 153 73M98 66c9-26 40-36 59-38M56 43c-10 30-4 48 13 61" fill="none" stroke="#75483a" stroke-width="4" stroke-linecap="round"/><g fill="#c83e33" stroke="#fff0e9" stroke-width="1.2"><g transform="translate(27 29)"><circle cx="0" cy="-8" r="5"/><circle cx="8" cy="-2" r="5"/><circle cx="5" cy="7" r="5"/><circle cx="-5" cy="7" r="5"/><circle cx="-8" cy="-2" r="5"/></g><g transform="translate(65 44)"><circle cx="0" cy="-9" r="5"/><circle cx="8" cy="-3" r="5"/><circle cx="5" cy="6" r="5"/><circle cx="-5" cy="6" r="5"/><circle cx="-8" cy="-3" r="5"/></g><g transform="translate(104 16)"><circle cx="0" cy="-8" r="4"/><circle cx="8" cy="-2" r="4"/><circle cx="4" cy="6" r="4"/><circle cx="-4" cy="6" r="4"/><circle cx="-8" cy="-2" r="4"/></g><g transform="translate(115 72)"><circle cx="0" cy="-6" r="4"/><circle cx="7" cy="-1" r="4"/><circle cx="4" cy="5" r="4"/><circle cx="-4" cy="5" r="4"/><circle cx="-7" cy="-1" r="4"/></g></g><g fill="#ecd0a1"><circle cx="27" cy="29" r="2"/><circle cx="65" cy="44" r="2"/><circle cx="104" cy="16" r="1.5"/><circle cx="115" cy="72" r="1.5"/></g></svg>
+          <svg class="deco-cloud" viewBox="0 0 110 65" aria-hidden="true"><path d="M12 30c-16-12 4-30 16-15 12-24 40-12 33 4 28-7 37 26 15 32-10 4-20-7-13-15 10-11 23 3 13 10M7 47c10 11 31 11 42 0"/></svg>
+          <svg class="deco-mountain" viewBox="0 0 900 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 76 70 34 125 70 182 25 258 72 350 41 430 83 513 52 582 81 669 41 750 70 820 24 900 76v24H0Z" fill="#ead6c4"/><path d="M0 86 97 59 177 88 262 55 366 89 480 63 550 92 665 64 757 92 832 57 900 90v10H0Z" fill="#f0e4d9"/></svg>
+          <div class="hero-content">
+            <div class="hero-big"><div class="vertical-tag">月历</div><div class="big-number">2<span>月</span></div></div>
+            <div class="hero-detail">
+              <h1 class="hero-heading">2025年2月 月历总览</h1>
+              <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg>公历：2025/02</div>
+              <div class="hero-info"><svg class="icon"><use href="#i-moon"/></svg>农历范围：正月初四 ～ 二月初一</div>
+              <div class="hero-info"><svg class="icon"><use href="#i-snake"/></svg>生肖：蛇年</div>
+              <div class="hero-info"><svg class="icon"><use href="#i-calendar"/></svg>本月天数：28天</div>
+              <div class="hero-info"><svg class="icon"><use href="#i-snow"/></svg>本月节气：立春（2月3日）、雨水（2月18日）</div>
+              <div class="hero-info month-keywords"><svg class="icon"><use href="#i-tag"/></svg>月度关键词：<span class="tiny-tag">春节月</span><span class="tiny-tag">立春</span><span class="tiny-tag">元宵节</span><span class="tiny-tag">雨水</span></div>
+            </div>
+          </div>
+          <div class="hero-note">2025年2月共28天，农历跨正月与二月，包含立春、雨水两个节气，并有元宵节等重要日期。</div>
+        </article>
+        <section class="panel calendar-panel month-calendar" aria-label="2025年2月月历">
+          <div class="calendar-header"><button class="cal-arrow" data-static-month="2025年2月" aria-label="上个月"><svg class="icon"><use href="#i-left"/></svg></button><div class="cal-title">2025年2月 ▾</div><button class="cal-arrow" data-static-month="2025年2月" aria-label="下个月"><svg class="icon"><use href="#i-right"/></svg></button></div>
+          <div class="calendar-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="weekend-color">六</span><span class="weekend-color">日</span></div>
+          <div class="calendar-days" id="monthCalendar"></div>
+        </section>
+      </div>
+      <div class="month-bottom">
+        <section class="panel month-card"><h2 class="section-heading">本月节气</h2>
+          <div class="term-item"><div class="term-illustration" aria-hidden="true">🌸</div><div><div class="term-when">2月3日 立春</div><div class="term-desc">春季开始，万物萌发</div></div></div>
+          <div class="term-item"><div class="term-illustration" aria-hidden="true">🌿</div><div><div class="term-when">2月18日 雨水</div><div class="term-desc">降水渐增，气温回升</div></div></div>
+        </section>
+        <section class="panel month-card"><h2 class="section-heading">节日速览</h2>
+          <ul class="festival-list">
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月2日</span><span>破五节 / 世界湿地日</span></li>
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月4日</span><span>世界抗癌症日</span></li>
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月12日</span><span>元宵节</span></li>
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月14日</span><span>网络情人节</span></li>
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月21日</span><span>国际母语日</span></li>
+            <li><svg class="icon"><use href="#i-calendar"/></svg><span class="festival-date">2月27日</span><span>国际北极熊日</span></li>
+          </ul>
+        </section>
+        <section class="panel month-card"><h2 class="section-heading">重点日期详情</h2>
+          <div class="selected-panel-top"><div class="selected-lantern"><svg viewBox="0 0 64 78"><use href="#i-lantern"/></svg></div><div class="selected-text"><div class="selected-title" id="selectedDate">2月12日 星期三</div><div class="selected-subtitle"><span id="selectedLunar">正月十五</span><span class="tiny-tag" id="selectedFestival">元宵节</span></div></div></div>
+          <div class="mini-yi-ji"><div><span class="mini-badge">宜</span><span class="mini-copy" id="selectedYi">结婚、开光、祈福、求嗣、解除、动土、安床、栽种</span></div><div><span class="mini-badge">忌</span><span class="mini-copy" id="selectedJi">搬家、作灶、伐木、安葬、出火、出行、纳畜</span></div></div>
+          <div class="detail-footer"><span id="selectedTerm">节气：立春</span><span id="selectedNext">距离雨水 6天</span></div>
+        </section>
+        <section class="panel month-card"><h2 class="section-heading">月度概览</h2>
+          <ul class="stat-list"><li><svg class="icon"><use href="#i-calendar"/></svg>月份：2025年2月</li><li><svg class="icon"><use href="#i-leaf"/></svg>节气数量：<strong>2</strong></li><li><svg class="icon"><use href="#i-star"/></svg>重点节日：<strong>6+</strong></li><li><svg class="icon"><use href="#i-calendar"/></svg>周末天数：<strong>8天</strong></li></ul>
+        </section>
+      </div>
+    </section>
+    <div class="bottom-note">万年历 · 设计原型　｜　当前为固定示例数据，未接入动态接口</div>
+  </main>
+  <div class="toast" role="status" aria-live="polite" id="toast"></div>
+  <script>
+    // 这里使用与设计稿相对应的固定演示数据，不处理外部接口、字段映射或日期换算。
+    const homeLunar = ['十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','十月','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八'];
+    const monthLunar = ['初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十','二月'];
+    const monthEvents = {2:'破五节',3:'立春',12:'元宵节',14:'网络情人节',18:'雨水',27:'北极熊日'};
+    const $ = s => document.querySelector(s);
+    let currentSelectedMonthDay = 12;
+    let toastTimer;
+    function showToast(message){
+      const node=$('#toast');node.textContent=message;node.classList.add('show');
+      clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove('show'),2500);
+    }
+    function switchPage(page){
+      document.querySelectorAll('.page').forEach(e=>e.classList.toggle('is-active',e.id===page));
+      document.querySelectorAll('.nav-item[data-target]').forEach(e=>{
+        const selected=e.dataset.target===page;e.classList.toggle('is-active',selected);
+        selected?e.setAttribute('aria-current','page'):e.removeAttribute('aria-current');
+      });
+      if(location.hash!==`#${page}`) history.replaceState(null,'',`#${page}`);
+      window.scrollTo({top:0,behavior:'instant'});
+    }
+    function buildCells(year, month, lunar, events, container, selected){
+      // 仅两个固定月份；填充月初 / 月末日期，确保排版与真实日历的周位置相符。
+      const jsStart = new Date(year, month-1, 1).getDay();
+      const offset=(jsStart+6)%7;
+      const count = new Date(year,month,0).getDate();
+      const prevCount=new Date(year,month-1,0).getDate();
+      const total=35;const fragment=document.createDocumentFragment();
+      for(let i=0;i<total;i++){
+        let day=i-offset+1, outside=day<1||day>count;
+        let label='';
+        if(day<1){day=prevCount+day;label=month===2?['廿八','廿九','正月','初二','初三'][i]||'':'十六';}
+        else if(day>count){day=day-count;label=month===2?['初二','初三'][day-1]||'':'十九';}
+        else label=lunar[day-1];
+        if(label==='二月')label='二月初一';
+        const b=document.createElement('button');
+        b.type='button';b.className='day-cell';
+        if(outside)b.classList.add('is-outside');
+        if(i%7>=5)b.classList.add('is-weekend');
+        if(!outside&&day===selected)b.classList.add('is-selected');
+        b.innerHTML=`<span class="day-number">${day}</span><span class="day-lunar">${label}</span>${!outside&&events[day]?`<span class="day-event">${events[day]}</span>`:''}`;
+        b.setAttribute('aria-label',`${outside?'相邻月份':'本月'}${day}日 ${label}${!outside&&events[day]?' '+events[day]:''}`);
+        b.setAttribute('aria-pressed',String(!outside&&day===selected));
+        if(!outside){
+          if(month===2){b.addEventListener('click',()=>selectMonthDay(day));}
+          else b.addEventListener('click',()=>{if(day!==22)showToast('首页当前仅展示 2023年11月22日 的详细示例');});
+        } else b.addEventListener('click',()=>showToast('静态演示仅提供当前示例月份'));
+        fragment.appendChild(b);
+      }
+      container.replaceChildren(fragment);
+    }
+    // 月历详情只准备了几个重点日期的静态内容；点击其他日期会显示占位文案。
+    const monthDetails={
+      2:{festival:'破五节',yi:'结婚、开光、解除、出火、拆卸、修造、搬家',ji:'作灶、安葬、祭祀、开业、订婚、订盟'},
+      3:{festival:'立春',yi:'结婚、安床、开光、出行、祭祀、动土、出火',ji:'掘井、词讼'},
+      12:{festival:'元宵节',yi:'结婚、开光、祈福、求嗣、解除、动土、安床、栽种',ji:'搬家、作灶、伐木、安葬、出火、出行、纳畜'},
+      14:{festival:'网络情人节',yi:'裁衣、伐木、作梁、纳财、交易、立券',ji:'诸事不宜'},
+      18:{festival:'雨水',yi:'提车、订婚、订盟、祭祀、祈福、求嗣、移徙',ji:'开光、造屋、动土、作灶、栽种'},
+      27:{festival:'国际北极熊日',yi:'会亲友、冠笄、安床、安机械、祭祀、祈福',ji:'结婚、开业、动土、作灶、安葬'}
+    };
+    function selectMonthDay(day){
+      currentSelectedMonthDay=day;
+      const details=monthDetails[day];
+      const week=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][new Date(2025,1,day).getDay()];
+      $('#selectedDate').textContent=`2月${day}日 ${week}`;
+      $('#selectedLunar').textContent=day===28?'二月初一':`正月${monthLunar[day-1]}`;
+      $('#selectedFestival').textContent=details?.festival||'普通日期';
+      $('#selectedYi').textContent=details?.yi||'此日期暂未填写演示内容';
+      $('#selectedJi').textContent=details?.ji||'此日期暂未填写演示内容';
+      $('#selectedTerm').textContent=`节气：${day<3?'大寒':day<18?'立春':'雨水'}`;
+      $('#selectedNext').textContent=day<3?`距离立春 ${3-day}天`:day<18?`距离雨水 ${18-day}天`:`距离惊蛰 ${34-day}天`;
+      buildCells(2025,2,monthLunar,monthEvents,$('#monthCalendar'),day);
+    }
+    buildCells(2023,11,homeLunar,{22:'小雪'},$('#homeCalendar'),22);
+    selectMonthDay(12);
+    document.querySelectorAll('.nav-item[data-target]').forEach(item=>item.addEventListener('click',()=>switchPage(item.dataset.target)));
+    document.querySelectorAll('.nav-item[data-mock]').forEach(item=>item.addEventListener('click',()=>showToast(`「${item.dataset.mock}」栏目暂未制作，当前可体验首页与月历`)));
+    document.querySelectorAll('[data-static-month]').forEach(item=>item.addEventListener('click',()=>showToast(`当前静态原型仅展示 ${item.dataset.staticMonth}`)));
+    $('#brandLink').addEventListener('click',e=>{e.preventDefault();switchPage('home')});
+    $('#searchForm').addEventListener('submit',e=>{
+      e.preventDefault();const q=$('#searchInput').value.trim().replace(/\s/g,'');
+      if(!q){showToast('请输入日期，例如 2025-02 或 2023-11-22');return;}
+      if(/2025.*(0?2月?|02)|元宵|立春|雨水/.test(q)){switchPage('month');showToast('已定位到 2025年2月 的演示月历');}
+      else if(/2023.*11|小雪/.test(q)){switchPage('home');showToast('已定位到 2023年11月22日 的演示首页');}
+      else showToast('静态原型暂仅支持 2023-11-22 与 2025-02 两组示例');
+    });
+    if(location.hash==='#month')switchPage('month');
+  </script>
+</body>
+</html>
