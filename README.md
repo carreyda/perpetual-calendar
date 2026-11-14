@@ -6,11 +6,11 @@
 
 ## 在线访问
 
-部署后地址（GitHub Pages）：
+已部署（GitHub Pages，`main` 分支根目录）：
 
-```
-https://carreyda.github.io/perpetual-calendar/
-```
+**https://carreyda.github.io/perpetual-calendar/**
+
+推送 `main` 后 GitHub 会自动重建，通常几十秒生效。
 
 ## 功能
 
@@ -66,7 +66,7 @@ preview.png                 README 预览图
 
 ## 部署到 GitHub Pages
 
-仓库根目录就是站点根目录，**不需要任何构建步骤**：
+仓库根目录就是站点根目录，**不需要任何构建步骤**。本仓库已经完成下面三步，以下步骤供换仓库/复现时参考：
 
 1. 把本目录推到 GitHub 仓库（例如 `perpetual-calendar`）
 2. 仓库 **Settings → Pages → Build and deployment**
